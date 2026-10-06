@@ -5,7 +5,7 @@ Projet personnel d'apprentissage. Une case cochée = étape réalisée et vérif
 ## Phase 0 — Mise en place
 - [x] 0.1 Outils locaux : uv, CLI gcloud, Docker Desktop
 - [x] 0.2 Projet GCP : facturation, budget avec alertes, API BigQuery et Cloud Storage
-- [ ] 0.3 Squelette du dépôt : packaging Python, `.gitignore`, `.env.example`, README, premiers ADR
+- [x] 0.3 Squelette du dépôt : packaging Python, `.gitignore`, `.env.example`, README, premiers ADR
 - [ ] 0.4 CI GitHub Actions : lint et tests sur chaque PR
 
 ## Phase 1 — Ingestion batch et modélisation dbt
