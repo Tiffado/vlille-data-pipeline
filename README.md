@@ -25,6 +25,10 @@ Chargement d'un jour dans les tables brutes BigQuery (remplace la partition du j
 ```bash
 uv run --env-file .env vlille-load --date 2026-10-06
 ```
+Collecte planifiée provisoire (en attendant Airflow) : tâche du Planificateur Windows qui lance
+[`scripts/collecte_planifiee.cmd`](scripts/collecte_planifiee.cmd) toutes les 30 minutes, journal dans
+`logs/`.
+
 Ressources GCP utilisées : voir [`infra/`](infra/README.md).
 
 ## Décisions techniques

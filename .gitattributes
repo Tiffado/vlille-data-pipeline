@@ -1,2 +1,4 @@
 # Fins de ligne LF partout (scripts exécutés dans des conteneurs Linux et en CI)
 * text=auto eol=lf
+# Scripts Windows : CRLF obligatoire pour cmd.exe
+*.cmd text eol=crlf

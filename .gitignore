@@ -30,3 +30,6 @@ dbt/logs/
 .vscode/
 *.log
 Thumbs.db
+
+# Journaux d'exécution locaux
+logs/
