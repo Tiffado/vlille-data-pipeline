@@ -6,10 +6,10 @@ Projet personnel d'apprentissage. Une case cochée = étape réalisée et vérif
 - [x] 0.1 Outils locaux : uv, CLI gcloud, Docker Desktop
 - [x] 0.2 Projet GCP : facturation, budget avec alertes, API BigQuery et Cloud Storage
 - [x] 0.3 Squelette du dépôt : packaging Python, `.gitignore`, `.env.example`, README, premiers ADR
-- [ ] 0.4 CI GitHub Actions : lint et tests sur chaque PR
+- [x] 0.4 CI GitHub Actions : lint et tests sur chaque PR
 
 ## Phase 1 — Ingestion batch et modélisation dbt
-- [ ] 1.1 Client GBFS V'Lille : collecte, validation, tests
+- [x] 1.1 Client GBFS V'Lille : collecte, validation, tests
 - [ ] 1.2 Zone brute GCS : JSON compressé partitionné par date, cycle de vie
 - [ ] 1.3 Tables BigQuery partitionnées et clusterisées, filtre de partition obligatoire
 - [ ] 1.4 Collecte météo Open-Meteo

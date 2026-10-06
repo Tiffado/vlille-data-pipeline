@@ -1,0 +1,42 @@
+{
+  "ttl": 0,
+  "version": "2.3",
+  "data": {
+    "stations": [
+      {
+        "name": "Metropole Europeenne de Lille (CB)",
+        "capacity": 36,
+        "station_id": "1",
+        "lat": 50.641926,
+        "lon": 3.075992,
+        "post_code": "59000",
+        "parking_type": "street_parking",
+        "parking_hoop": true,
+        "is_virtual_station": false
+      },
+      {
+        "name": "Universite Catholique",
+        "capacity": 31,
+        "station_id": "2",
+        "lat": 50.632233,
+        "lon": 3.046134,
+        "post_code": "59800",
+        "parking_type": "street_parking",
+        "parking_hoop": true,
+        "is_virtual_station": false
+      },
+      {
+        "name": "Jardin Vauban",
+        "capacity": 18,
+        "station_id": "3",
+        "lat": 50.636093,
+        "lon": 3.050447,
+        "post_code": "59800",
+        "parking_type": "street_parking",
+        "parking_hoop": true,
+        "is_virtual_station": false
+      }
+    ]
+  },
+  "last_updated": 1791299524
+}
