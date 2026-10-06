@@ -37,22 +37,29 @@ class GbfsClient:
 
         Lève `GbfsError` si ce flux n'est pas déclaré dans `gbfs.json`.
         """
-        return StationInformationFeed.model_validate(self._get_feed("station_information"))
+        return StationInformationFeed.model_validate_json(self.fetch_raw("station_information"))
 
     def station_status(self) -> StationStatusFeed:
         """Télécharge et valide le flux `station_status`.
 
         Lève `GbfsError` si ce flux n'est pas déclaré dans `gbfs.json`.
         """
-        return StationStatusFeed.model_validate(self._get_feed("station_status"))
+        return StationStatusFeed.model_validate_json(self.fetch_raw("station_status"))
 
-    def _get_feed(self, name: str) -> dict:
+    def fetch_raw(self, name: str) -> bytes:
+        """Télécharge un flux et retourne la réponse telle que reçue, sans validation.
+
+        Lève `GbfsError` si ce flux n'est pas déclaré dans `gbfs.json`.
+        """
         urls = self.feed_urls()
         if name not in urls:
             raise GbfsError(f"Flux {name!r} absent de {self._gbfs_url}")
-        return self._get_json(urls[name])
+        return self._get(urls[name]).content
 
     def _get_json(self, url: str) -> dict:
+        return self._get(url).json()
+
+    def _get(self, url: str) -> httpx.Response:
         response = self._http.get(url)
         response.raise_for_status()
-        return response.json()
+        return response

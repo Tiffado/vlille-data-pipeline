@@ -10,7 +10,7 @@ Projet personnel d'apprentissage. Une case cochée = étape réalisée et vérif
 
 ## Phase 1 — Ingestion batch et modélisation dbt
 - [x] 1.1 Client GBFS V'Lille : collecte, validation, tests
-- [ ] 1.2 Zone brute GCS : JSON compressé partitionné par date, cycle de vie
+- [x] 1.2 Zone brute GCS : JSON compressé partitionné par date, cycle de vie
 - [ ] 1.3 Tables BigQuery partitionnées et clusterisées, filtre de partition obligatoire
 - [ ] 1.4 Collecte météo Open-Meteo
 - [ ] 1.5 dbt Core : sources, staging, tests

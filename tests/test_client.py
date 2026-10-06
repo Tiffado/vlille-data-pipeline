@@ -46,6 +46,12 @@ def test_station_status_is_fetched_and_validated(routes):
     assert [s.station_id for s in feed.data.stations] == ["2", "3"]
 
 
+def test_fetch_raw_returns_bytes_as_received(routes):
+    raw = make_client(routes).fetch_raw("station_status")
+
+    assert raw == routes[BASE + "station_status.json"].content
+
+
 def test_http_error_is_raised(routes):
     routes[GBFS_URL] = httpx.Response(503)
 

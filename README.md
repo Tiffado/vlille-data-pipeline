@@ -12,8 +12,17 @@ uv sync
 uv run pytest
 ```
 
+Collecte (une exécution) : copier `.env.example` en `.env`, s'authentifier avec
+`gcloud auth application-default login`, puis :
+```bash
+uv run --env-file .env vlille-collect
+```
+La commande archive les flux `station_information` et `station_status` dans la zone brute GCS, puis
+les valide ; elle se termine en erreur si un flux est invalide.
+
 ## Décisions techniques
 Chaque choix est justifié dans un ADR court ([`docs/decisions/`](docs/decisions/)) :
 - [0001 — Source de données : flux GBFS V'Lille](docs/decisions/0001-source-gbfs-vlille.md)
 - [0002 — Outillage Python : uv, layout `src/`, pytest, ruff](docs/decisions/0002-outillage-python.md)
 - [0003 — GCP : région, authentification et maîtrise des coûts](docs/decisions/0003-gcp-region-auth-couts.md)
+- [0004 — Zone brute dans Cloud Storage](docs/decisions/0004-zone-brute-gcs.md)
