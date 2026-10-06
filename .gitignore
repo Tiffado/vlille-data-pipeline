@@ -1,0 +1,32 @@
+# Secrets et configuration locale
+.env
+*.key.json
+service-account*.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Éditeurs et système
+.idea/
+.vscode/
+*.log
+Thumbs.db
