@@ -11,7 +11,7 @@ le DML (`MERGE`), nécessaire aux modèles incrémentaux et snapshots dbt.
 ## Décision
 - **Région unique `europe-west1`** pour le bucket GCS et les datasets BigQuery.
 - **Authentification sans clé** : Application Default Credentials en local
-  (`gcloud auth application-default login`) ; Workload Identity Federation prévue pour la CI.
+  (`gcloud auth application-default login`) ; la CI n'accède pas à GCP (tests sans réseau).
 - **Budget** de 5 € par mois sur le compte de facturation, alertes à 50 %, 90 %, 100 % du coût réel
   et 100 % du coût prévisionnel.
 - Seules les API utilisées sont activées (BigQuery, Cloud Storage, Billing Budget).

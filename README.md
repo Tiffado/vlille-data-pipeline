@@ -1,7 +1,8 @@
 # V'Lille — pipeline de données
 
 Projet personnel d'apprentissage : collecte de la disponibilité des stations V'Lille (open data de la
-Métropole Européenne de Lille), enrichie avec la météo, modélisée dans BigQuery avec dbt.
+Métropole Européenne de Lille), modélisée dans BigQuery avec dbt, orchestrée avec Airflow, puis
+collectée en temps réel avec Kafka.
 
 Avancement : voir [ROADMAP.md](ROADMAP.md).
 

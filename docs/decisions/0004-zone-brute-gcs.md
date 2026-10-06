@@ -14,15 +14,13 @@ chargement. La collecte peut être relancée plusieurs fois sur le même état d
 - Une réponse = un objet, contenu inchangé, compressé en gzip.
 - Nom déduit du `last_updated` du flux, partitionné par jour à la manière de Hive :
   `gbfs/<flux>/dt=AAAA-MM-JJ/<flux>_<AAAAMMJJTHHMMSSZ>.json.gz`.
-- Écriture conditionnelle (`if_generation_match=0`) : un objet existant n'est jamais réécrit.
 - Archivage avant validation : une réponse invalide est conservée, la commande se termine en erreur.
 - Règle de cycle de vie : suppression après 30 jours (`infra/gcs-lifecycle.json`).
 
 ## Justification
-- Nom issu de la source et non de l'heure de collecte : deux collectes du même état produisent le même
-  objet, sans doublon (idempotence).
-- Compression avec date d'en-tête fixée (`mtime=0`) : même contenu, mêmes octets.
-- L'écriture conditionnelle est atomique côté GCS : pas de course entre vérification et écriture.
+- Nom issu de la source et non de l'heure de collecte : deux collectes du même état écrivent le même
+  objet, la seconde remplaçant la première par un contenu identique. Pas de doublon (idempotence),
+  sans mécanisme supplémentaire.
 - Le partitionnement `dt=` permet de ne lire, recharger ou purger qu'un jour.
 - Volume mesuré : environ 3 Ko compressés par réponse `station_status` (environ 100 Ko en JSON).
 

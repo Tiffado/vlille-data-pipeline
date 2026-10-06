@@ -35,9 +35,8 @@ def test_unreadable_last_updated_raises(bad):
 def test_payload_is_stored_gzipped_and_unchanged(payload):
     bucket = FakeBucket()
 
-    name, written = RawStore(bucket).write("station_status", payload)
+    name = RawStore(bucket).write("station_status", payload)
 
-    assert written is True
     assert gzip.decompress(bucket.objects[name]) == payload
     assert bucket.content_types[name] == "application/gzip"
 
@@ -49,15 +48,5 @@ def test_same_state_written_twice_is_stored_once(payload):
     first = store.write("station_status", payload)
     second = store.write("station_status", payload)
 
-    assert first == (second[0], True)
-    assert second[1] is False
+    assert first == second
     assert len(bucket.objects) == 1
-
-
-def test_compression_is_deterministic(payload):
-    bucket = FakeBucket()
-
-    name, _ = RawStore(bucket).write("station_status", payload)
-
-    # Octets 4 à 7 de l'en-tête gzip : date de compression, fixée à 0.
-    assert bucket.objects[name][4:8] == bytes(4)

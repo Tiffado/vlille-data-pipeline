@@ -30,8 +30,8 @@ def collect(gbfs: GbfsClient, store: RawStore) -> bool:
     all_valid = True
     for feed, model in FEEDS.items():
         raw = gbfs.fetch_raw(feed)
-        name, written = store.write(feed, raw)
-        log.info("%s : %s", "archivé" if written else "déjà présent", name)
+        name = store.write(feed, raw)
+        log.info("archivé : %s", name)
         try:
             model.model_validate_json(raw)
         except ValidationError as exc:

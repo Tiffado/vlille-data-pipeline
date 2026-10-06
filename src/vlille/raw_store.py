@@ -1,15 +1,14 @@
 """Dépôt des réponses GBFS brutes dans la zone brute Cloud Storage.
 
 Chaque réponse est stockée telle que reçue, compressée en gzip, sous un nom déduit de son champ
-`last_updated` : deux collectes du même état produisent le même objet (idempotence). Un objet déjà
-présent n'est jamais réécrit (zone brute immuable).
+`last_updated` : deux collectes du même état écrivent le même objet, la seconde remplaçant la
+première par un contenu identique (idempotence, pas de doublon).
 """
 
 import gzip
 import json
 from datetime import UTC, datetime
 
-from google.api_core.exceptions import PreconditionFailed
 from google.cloud.storage import Bucket
 
 PREFIX = "gbfs"
@@ -43,19 +42,9 @@ class RawStore:
     def __init__(self, bucket: Bucket) -> None:
         self._bucket = bucket
 
-    def write(self, feed: str, payload: bytes) -> tuple[str, bool]:
-        """Archive une réponse brute.
-
-        Retourne (nom de l'objet, True si écrit / False s'il existait déjà).
-        """
+    def write(self, feed: str, payload: bytes) -> str:
+        """Archive une réponse brute et retourne le nom de l'objet écrit."""
         name = object_name(feed, read_last_updated(payload))
-        # mtime=0 : même contenu → mêmes octets compressés, quelle que soit l'heure de collecte.
-        data = gzip.compress(payload, mtime=0)
-        try:
-            # if_generation_match=0 : écrire seulement si l'objet n'existe pas encore.
-            self._bucket.blob(name).upload_from_string(
-                data, content_type="application/gzip", if_generation_match=0
-            )
-        except PreconditionFailed:
-            return name, False
-        return name, True
+        blob = self._bucket.blob(name)
+        blob.upload_from_string(gzip.compress(payload), content_type="application/gzip")
+        return name

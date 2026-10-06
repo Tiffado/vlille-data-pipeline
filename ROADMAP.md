@@ -8,34 +8,20 @@ Projet personnel d'apprentissage. Une case cochée = étape réalisée et vérif
 - [x] 0.3 Squelette du dépôt : packaging Python, `.gitignore`, `.env.example`, README, premiers ADR
 - [x] 0.4 CI GitHub Actions : lint et tests sur chaque PR
 
-## Phase 1 — Ingestion batch et modélisation dbt
+## Phase 1 — Batch et modélisation
 - [x] 1.1 Client GBFS V'Lille : collecte, validation, tests
-- [x] 1.2 Zone brute GCS : JSON compressé partitionné par date, cycle de vie
-- [ ] 1.3 Tables BigQuery partitionnées et clusterisées, filtre de partition obligatoire
-- [ ] 1.4 Collecte météo Open-Meteo
-- [ ] 1.5 dbt Core : sources, staging, tests
-- [ ] 1.6 Snapshot SCD2 des stations
-- [ ] 1.7 Faits incrémentaux dédupliqués sur `(station_id, last_reported)`
-- [ ] 1.8 Marts : stations vides ou pleines, rééquilibrage, effet de la météo
-- [ ] 1.9 CI : `dbt build` sur un dataset BigQuery dédié
+- [x] 1.2 Zone brute GCS : réponses archivées telles que reçues, partitionnées par jour
+- [ ] 1.3 Chargement dans BigQuery : table partitionnée
+- [ ] 1.4 dbt : staging et tests
+- [ ] 1.5 dbt : snapshot SCD2 des stations et faits incrémentaux
+- [ ] 1.6 dbt : mart des stations vides ou pleines
 
-## Phase 2 — Orchestration Airflow
-- [ ] 2.0 Image Docker du collecteur : Dockerfile multi-étapes avec uv, utilisateur non-root
-- [ ] 2.1 Airflow local sous Docker Compose
-- [ ] 2.2 DAG météo, snapshot et build dbt, contrôles qualité ; collecte lancée dans le conteneur du collecteur
-- [ ] 2.3 Backfill et rejeux idempotents
+## Phase 2 — Orchestration
+- [ ] 2.1 Airflow sous Docker Compose : DAG collecte → chargement → `dbt build`
 
-## Phase 3 — Temps réel Kafka
-- [ ] 3.1 Kafka local sous Docker (mode KRaft)
-- [ ] 3.2 Producteur : statut des stations, clé `station_id`
-- [ ] 3.3 Consommateur vers GCS et BigQuery, commit des offsets après écriture (at-least-once)
-- [ ] 3.4 Gestion des messages invalides et relance
-
-## Phase 4 — Options
-- [ ] 4.1 API FastAPI au-dessus des marts
-- [ ] 4.2 Recalcul historique PySpark sur Dataproc Serverless
-- [ ] 4.3 Infrastructure Terraform
+## Phase 3 — Temps réel
+- [ ] 3.1 Kafka local et producteur
+- [ ] 3.2 Consommateur vers GCS
 
 ## Finalisation
-- [ ] README final : schéma d'architecture, choix justifiés, fait / prévu / hors périmètre
-- [ ] Dépôt public
+- [ ] README avec schéma d'architecture, dépôt public
