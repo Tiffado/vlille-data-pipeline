@@ -5,7 +5,6 @@ commande se termine en erreur pour la signaler.
 """
 
 import logging
-import os
 import sys
 
 import httpx
@@ -15,6 +14,7 @@ from pydantic import BaseModel, ValidationError
 from vlille.client import GbfsClient
 from vlille.models import StationInformationFeed, StationStatusFeed
 from vlille.raw_store import RawStore
+from vlille.settings import env
 
 FEEDS: dict[str, type[BaseModel]] = {
     "station_information": StationInformationFeed,
@@ -40,18 +40,11 @@ def collect(gbfs: GbfsClient, store: RawStore) -> bool:
     return all_valid
 
 
-def _env(name: str) -> str:
-    value = os.environ.get(name)
-    if not value:
-        raise SystemExit(f"Variable d'environnement manquante : {name} (voir .env.example)")
-    return value
-
-
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
-    bucket = storage.Client(project=_env("GOOGLE_CLOUD_PROJECT")).bucket(_env("GCS_RAW_BUCKET"))
+    bucket = storage.Client(project=env("GOOGLE_CLOUD_PROJECT")).bucket(env("GCS_RAW_BUCKET"))
     with httpx.Client(timeout=HTTP_TIMEOUT_SECONDS) as http:
-        gbfs = GbfsClient(_env("VLILLE_GBFS_URL"), http)
+        gbfs = GbfsClient(env("VLILLE_GBFS_URL"), http)
         return 0 if collect(gbfs, RawStore(bucket)) else 1
 
 

@@ -1,0 +1,5 @@
+[
+  {"name": "last_updated", "type": "TIMESTAMP", "mode": "REQUIRED", "description": "Horodatage du flux GBFS (partition)"},
+  {"name": "source_uri", "type": "STRING", "mode": "REQUIRED", "description": "Fichier d'origine dans la zone brute GCS"},
+  {"name": "payload", "type": "JSON", "mode": "REQUIRED", "description": "Réponse GBFS complète, telle que reçue"}
+]
