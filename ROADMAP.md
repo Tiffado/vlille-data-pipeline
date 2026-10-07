@@ -24,6 +24,9 @@ Projet personnel d'apprentissage. Une case cochée = étape réalisée et vérif
 - [x] 3.2 Consommateur vers GCS
 - [x] 3.3 Kafka, seule source des disponibilités ; batch limité au référentiel, toutes les 3 heures
 
+## Visualisation
+- [x] 4.1 Tableau de bord Data Studio public sur le mart
+
 ## Finalisation
 - [x] Documentation : README avec schéma d'architecture, guide par étape, procédure de lancement
 - [x] Dépôt public

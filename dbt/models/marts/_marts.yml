@@ -50,10 +50,15 @@ models:
         description: Part des remontées du jour avec 0 vélo disponible.
       - name: share_full
         description: Part des remontées du jour avec 0 place libre.
-      - name: rebalancing_need
-        description: "« apporter des vélos », « retirer des vélos » ou vide."
+      - name: location
+        description: Position « latitude,longitude », pour la carte du tableau de bord.
         data_tests:
+          - not_null
+      - name: rebalancing_need
+        description: "« apporter des vélos », « retirer des vélos » ou « aucun »."
+        data_tests:
+          - not_null
           - accepted_values:
               arguments:
-                values: ['apporter des vélos', 'retirer des vélos']
+                values: ['apporter des vélos', 'retirer des vélos', 'aucun']
 

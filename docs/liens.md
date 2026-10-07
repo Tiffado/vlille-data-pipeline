@@ -3,10 +3,11 @@
 Tous les accès du projet en un seul endroit. Les interfaces locales ne répondent que si les services
 tournent sur le poste (voir [RUN.md](RUN.md)).
 
-## Interfaces locales
+## Interfaces
 
 | Interface | Adresse | Condition |
 |---|---|---|
+| Tableau de bord Data Studio (public) | <https://datastudio.google.com/reporting/94e9208b-e444-4b38-a2eb-7d2ecd21763e> | aucune : hébergé par Google |
 | Airflow | <http://localhost:8081> | Docker Desktop lancé (démarre avec lui) |
 | Documentation dbt | <http://localhost:8080> | après `uv run --env-file .env dbt docs serve --project-dir dbt --profiles-dir dbt` |
 
@@ -74,6 +75,7 @@ affiché avant l'exécution.
 | BigQuery (bibliothèque Python) | <https://cloud.google.com/python/docs/reference/bigquery/latest> |
 | dbt | <https://docs.getdbt.com/> |
 | Apache Airflow | <https://airflow.apache.org/docs/> |
+| Data Studio | <https://support.google.com/datastudio> |
 | Apache Kafka | <https://kafka.apache.org/documentation/> |
 | confluent-kafka (client Python) | <https://docs.confluent.io/kafka-clients/python/current/overview.html> |
 | Docker | <https://docs.docker.com/> |
