@@ -31,7 +31,7 @@ Client Python : [confluent-kafka](https://docs.confluent.io/kafka-clients/python
 [`produce.py`](../../src/vlille/produce.py) interroge `station_status` toutes les 60 secondes et publie
 **un message par station dont `last_reported` a changé** : un message correspond à un événement réel.
 Clé `station_id`, valeur JSON, `acks=all` (confirmation une fois le message écrit par les répliques).
-Il tourne en continu, dans un terminal.
+Il tourne en continu.
 
 ## Le consommateur : `vlille-consume`
 
@@ -48,12 +48,19 @@ aucune perte, doublons possibles (éliminés en aval sur `(station_id, last_repo
 
 Ces fichiers ne sont pas chargés dans BigQuery : hors du périmètre du projet.
 
+## En conteneurs
+
+Le producteur et le consommateur tournent comme services du même `docker-compose.yml` que Kafka, dans
+une image commune ([`kafka/Dockerfile`](../../kafka/Dockerfile)) : Python 3.12 *slim*, projet installé
+avec uv, utilisateur sans droits d'administration. Ils se connectent au broker par le point d'entrée
+interne `kafka:19092` et redémarrent avec Docker (`restart: always`). Le consommateur reçoit les
+identifiants GCP en lecture seule, comme Airflow.
+
 ## Lancer et voir
 
 ```bash
-docker compose -f kafka/docker-compose.yml up -d
-uv run --env-file .env vlille-produce     # terminal 1
-uv run --env-file .env vlille-consume     # terminal 2
+docker compose -f kafka/docker-compose.yml up -d --build
+docker compose -f kafka/docker-compose.yml logs -f producer consumer
 ```
 
 Retard du consommateur (`LAG` = messages en attente) :
@@ -66,4 +73,5 @@ Fichiers écrits : dossier `kafka/` du bucket dans la
 [console Cloud Storage](https://console.cloud.google.com/storage/browser/vlille-pipeline-raw?project=vlille-pipeline).
 
 Décisions : [ADR 0010](../decisions/0010-kafka-producteur.md),
-[ADR 0011](../decisions/0011-kafka-consommateur.md).
+[ADR 0011](../decisions/0011-kafka-consommateur.md),
+[ADR 0012](../decisions/0012-services-kafka-en-conteneurs.md).

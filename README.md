@@ -71,6 +71,7 @@ cp .env.example .env
 gcloud auth application-default login
 uv run pytest
 docker compose -f airflow/docker-compose.yml up -d --build
+docker compose -f kafka/docker-compose.yml up -d --build
 ```
 
 Interfaces locales :
@@ -87,15 +88,15 @@ src/vlille/          code Python (collecte, chargement, producteur et consommate
 tests/               tests pytest, sans réseau (GCS, BigQuery et Kafka simulés)
 dbt/                 projet dbt : modèles, snapshot, tests de données
 airflow/             image, docker-compose et DAG Airflow
-kafka/               docker-compose de Kafka
+kafka/               docker-compose de Kafka, du producteur et du consommateur, image du projet
 infra/               définitions des ressources GCP (bucket, tables)
 docs/                guide, procédure de lancement, décisions (ADR)
 ```
 
 ## Limites connues
 
-- Airflow et Kafka tournent seulement quand le poste est allumé avec Docker Desktop lancé : les
-  données ont des trous.
+- Airflow, Kafka, le producteur et le consommateur tournent seulement quand le poste est allumé avec
+  Docker Desktop lancé : les données ont des trous.
 - Kafka n'a qu'un broker, donc aucune réplication.
 - Les indicateurs du mart sont calculés sur le nombre de remontées, approximation de la durée.
 - Les fichiers écrits par le consommateur Kafka ne sont pas chargés dans BigQuery.
