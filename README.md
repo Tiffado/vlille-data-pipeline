@@ -10,6 +10,9 @@ production : tout ce qui tourne en continu (Airflow, Kafka) tourne sur un poste 
 **Questions métier traitées :** quelles stations sont souvent vides ou pleines, et lesquelles demandent
 un rééquilibrage.
 
+**[Voir le tableau de bord](https://datastudio.google.com/reporting/94e9208b-e444-4b38-a2eb-7d2ecd21763e)** (Data Studio, public, sans compte) : carte des stations et
+classement par part du temps vide.
+
 ## Architecture
 
 ```mermaid
@@ -34,9 +37,11 @@ flowchart LR
         DEV[("BigQuery<br/>vlille_dev")]
     end
 
+    VIZ["Data Studio<br/>tableau de bord public"]
+
     API -- station_status --> PRODUCE --> TOPIC --> CONSUME --> GCS
     API -- station_information --> COLLECT --> GCS
-    GCS --> LOAD --> RAW --> DBT --> DEV
+    GCS --> LOAD --> RAW --> DBT --> DEV --> VIZ
 ```
 
 Chaque donnée a une seule voie d'entrée : les **disponibilités** des stations arrivent en continu par
@@ -72,6 +77,7 @@ Côté Google, sans dépendre du poste : suppression des fichiers de la zone bru
 | Zone brute | [Cloud Storage](https://cloud.google.com/storage/docs) | Réponses conservées telles que reçues, 30 jours |
 | Entrepôt | [BigQuery](https://cloud.google.com/bigquery/docs) | Tables brutes partitionnées, puis tables modélisées |
 | Transformation | [dbt Core](https://docs.getdbt.com/) | SQL versionné et testé : staging, historique SCD2, faits, mart |
+| Visualisation | [Data Studio](https://datastudio.google.com/) | Tableau de bord public sur le mart : carte et classement des stations |
 | Orchestration | [Apache Airflow 3](https://airflow.apache.org/docs/) | Enchaîne collecte du référentiel → chargement → dbt toutes les 3 heures |
 | Temps réel | [Apache Kafka 4](https://kafka.apache.org/documentation/) | Seule voie d'entrée des disponibilités : chaque nouvelle remontée de station jusqu'à la zone brute |
 | Outillage | [uv](https://docs.astral.sh/uv/), [pytest](https://docs.pytest.org/), [ruff](https://docs.astral.sh/ruff/), [Docker](https://docs.docker.com/), GitHub Actions | Environnement reproductible, tests, lint, conteneurs, CI |
@@ -105,6 +111,7 @@ Interfaces locales (tous les liens : [docs/liens.md](docs/liens.md)) :
 
 | Interface | Adresse |
 |---|---|
+| Tableau de bord (public) | https://datastudio.google.com/reporting/94e9208b-e444-4b38-a2eb-7d2ecd21763e |
 | Airflow | http://localhost:8081 |
 | Documentation dbt (après `dbt docs serve`) | http://localhost:8080 |
 

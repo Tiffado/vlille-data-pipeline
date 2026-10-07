@@ -15,7 +15,7 @@ Le batch charge ensuite les deux sources dans BigQuery et reconstruit les modèl
 
 ```
 DISPONIBILITÉS  API ─► producer (1 min) ─► Kafka ─► consumer (30 min) ─► GCS kafka/ ─┐
-RÉFÉRENTIEL     API ─► collect ──────────────────────────────────────► GCS gbfs/  ─┼─► load ─► vlille_raw ─► dbt ─► vlille_dev
+RÉFÉRENTIEL     API ─► collect ──────────────────────────────────────► GCS gbfs/  ─┼─► load ─► vlille_raw ─► dbt ─► vlille_dev ─► Data Studio
                        └───────────────── Airflow, toutes les 3 h ──────────────────┘
 ```
 
@@ -95,7 +95,15 @@ Accès uniforme, accès public bloqué, suppression après 30 jours.
 | `snap_station` | snapshot | historique SCD type 2 du référentiel |
 | `dim_station` | table | versions des stations avec période de validité |
 | `fct_station_status` | table incrémentale (`merge`) | une ligne par remontée `(station_id, last_reported_at)`, partition par jour |
-| `mart_station_daily` | table | par station et par jour : part vide, part pleine, besoin de rééquilibrage |
+| `mart_station_daily` | table | par station et par jour : part vide, part pleine, besoin de rééquilibrage, position ; lue par le tableau de bord |
+
+## Visualisation
+
+Tableau de bord **Data Studio** (ex-Looker Studio) : <https://datastudio.google.com/reporting/94e9208b-e444-4b38-a2eb-7d2ecd21763e>
+
+- source : `vlille_dev.mart_station_daily`, connecteur BigQuery natif ;
+- partage public en lecture, identifiants du propriétaire (pas de compte GCP pour les visiteurs) ;
+- données rafraîchies au rythme de BigQuery (toutes les 3 heures).
 
 ## Garanties
 

@@ -19,6 +19,7 @@ des choix sont dans les [ADR](../decisions/).
 | 6 | [Orchestration avec Airflow](06-airflow.md) | Airflow, Docker Compose |
 | 7 | [Temps réel avec Kafka](07-kafka.md) | Kafka, confluent-kafka |
 | 8 | [Qualité : tests et CI](08-qualite.md) | pytest, ruff, tests dbt, GitHub Actions |
+| 9 | [Visualisation avec Data Studio](09-visualisation.md) | Data Studio |
 
 ## Vocabulaire utile
 

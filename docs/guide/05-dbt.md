@@ -82,7 +82,12 @@ est relu. Les messages Kafka en double (garantie « au moins une fois ») ne son
 
 - `share_empty` / `share_full` : part des remontées avec 0 vélo / 0 place libre ;
 - `rebalancing_need` : « apporter des vélos » ou « retirer des vélos » au-delà d'un seuil (variable
-  `rebalancing_threshold`, 20 %).
+  `rebalancing_threshold`, 20 %), « aucun » sinon ;
+- `location` : position `latitude,longitude`, pour la carte du tableau de bord.
+
+Seules les remontées de la période de collecte sont gardées : une station hors service peut publier une
+remontée vieille de plusieurs mois. Le mart est la table lue par le tableau de bord
+([chapitre 9](09-visualisation.md)).
 
 Limite : la part des remontées approxime la part du temps, les remontées étant irrégulières.
 
