@@ -69,7 +69,7 @@ activité :
 docker compose -f kafka/docker-compose.yml logs --tail 5 producer consumer
 ```
 
-Le producteur écrit une ligne par minute, le consommateur une ligne par lot (toutes les 5 minutes).
+Le producteur écrit une ligne par minute, le consommateur une ligne par lot (toutes les 30 minutes).
 
 ## Première installation
 

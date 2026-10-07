@@ -19,7 +19,7 @@ flowchart LR
     subgraph Streaming["Disponibilités — en continu, Kafka local"]
         PRODUCE["vlille-produce<br/>chaque minute"]
         TOPIC[("topic<br/>vlille.station_status")]
-        CONSUME["vlille-consume<br/>lots de 5 min"]
+        CONSUME["vlille-consume<br/>lots de 30 min"]
     end
 
     subgraph Batch["Batch — toutes les 3 h, orchestré par Airflow"]
@@ -53,7 +53,7 @@ Tout démarre avec Docker Desktop, sans action manuelle.
 | Traitement | Quand | Rôle |
 |---|---|---|
 | `producer` (`vlille-produce`) | chaque minute | lit les disponibilités et publie dans Kafka chaque station dont l'état a changé |
-| `consumer` (`vlille-consume`) | lot toutes les 5 min, ou dès 500 messages | écrit les messages dans la zone brute GCS (`kafka/`) |
+| `consumer` (`vlille-consume`) | lot toutes les 30 min, ou dès 10 000 messages | écrit les messages dans la zone brute GCS (`kafka/`) |
 
 **Batch, toutes les 3 heures (DAG Airflow `vlille_pipeline`)**
 

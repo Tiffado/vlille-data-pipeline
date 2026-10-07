@@ -14,7 +14,7 @@ Une voie d'entrée par donnée :
 Le batch charge ensuite les deux sources dans BigQuery et reconstruit les modèles dbt.
 
 ```
-DISPONIBILITÉS  API ─► producer (1 min) ─► Kafka ─► consumer (5 min) ─► GCS kafka/ ─┐
+DISPONIBILITÉS  API ─► producer (1 min) ─► Kafka ─► consumer (30 min) ─► GCS kafka/ ─┐
 RÉFÉRENTIEL     API ─► collect ──────────────────────────────────────► GCS gbfs/  ─┼─► load ─► vlille_raw ─► dbt ─► vlille_dev
                        └───────────────── Airflow, toutes les 3 h ──────────────────┘
 ```
@@ -26,7 +26,7 @@ RÉFÉRENTIEL     API ─► collect ──────────────�
 | Traitement | Commande | Quand | Entrée | Sortie |
 |---|---|---|---|---|
 | Producteur | `vlille-produce` | chaque minute | API `station_status` | un message par station dont l'état a changé, topic `vlille.station_status`, clé `station_id` |
-| Consommateur | `vlille-consume` | lot toutes les 5 min, ou dès 500 messages | topic `vlille.station_status` | `gs://vlille-pipeline-raw/kafka/station_status/dt=AAAA-MM-JJ/p<partition>-<offset>.ndjson.gz` |
+| Consommateur | `vlille-consume` | lot toutes les 30 min, ou dès 10 000 messages | topic `vlille.station_status` | `gs://vlille-pipeline-raw/kafka/station_status/dt=AAAA-MM-JJ/p<partition>-<offset>.ndjson.gz` |
 
 ### Batch (DAG Airflow `vlille_pipeline`, toutes les 3 heures)
 

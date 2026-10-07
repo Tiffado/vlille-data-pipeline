@@ -37,8 +37,8 @@ Il tourne en continu.
 
 ## Le consommateur : `vlille-consume`
 
-[`consume.py`](../../src/vlille/consume.py) lit le topic, accumule les messages en lots (500 messages
-ou 5 minutes) et écrit un fichier par partition dans la zone brute :
+[`consume.py`](../../src/vlille/consume.py) lit le topic, accumule les messages en lots (30 minutes
+ou 10 000 messages) et écrit un fichier par partition dans la zone brute :
 
 ```
 kafka/station_status/dt=2026-10-07/p1-000000000267.ndjson.gz
@@ -47,6 +47,10 @@ kafka/station_status/dt=2026-10-07/p1-000000000267.ndjson.gz
 Une ligne JSON par message, sans transformation. Les offsets sont validés **après** l'écriture : en cas
 d'arrêt brutal, le lot non validé est relu et réécrit au redémarrage. Garantie **au moins une fois** :
 aucune perte, doublons possibles (éliminés en aval sur `(station_id, last_reported)`).
+
+Lots de 30 minutes : environ 3 fichiers par demi-heure, au lieu de centaines de petits fichiers par jour
+(chaque écriture et chaque lecture GCS est facturée, et beaucoup de petits fichiers ralentissent les
+lectures : le problème classique des petits fichiers, connu sur HDFS).
 
 Ces fichiers sont chargés dans la table `vlille_raw.raw_station_status_stream` par `vlille-load`, sous
 Airflow, toutes les 3 heures ([chapitre 4](04-bigquery.md)).

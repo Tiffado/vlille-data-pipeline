@@ -10,7 +10,8 @@ Kafka (7 jours), sans perte, et sans multiplier les écritures facturées dans G
 ## Décision
 - Commande **`vlille-consume`**, groupe de consommateurs `vlille-gcs-writer`, lecture depuis le début
   du topic au premier démarrage.
-- Messages accumulés en **lots** (500 messages ou 300 secondes par défaut, paramétrables).
+- Messages accumulés en **lots** (30 minutes ou 10 000 messages par défaut, paramétrables ; 5 minutes
+  au départ, allongé pour limiter le nombre de petits fichiers).
 - Chaque lot est écrit dans le bucket de la zone brute, **un fichier par partition** :
   `kafka/station_status/dt=AAAA-MM-JJ/p<partition>-<premier offset>.ndjson.gz`, une ligne JSON par
   message, sans transformation.
@@ -21,7 +22,8 @@ Kafka (7 jours), sans perte, et sans multiplier les écritures facturées dans G
   perte (garantie « au moins une fois »). L'ordre inverse perdrait les messages (« au plus une fois »).
 - Les doublons possibles sont sans conséquence : la table de faits dédoublonne sur
   `(station_id, last_reported)`.
-- Lots : quelques centaines d'écritures GCS par jour au lieu d'une par message.
+- Lots : environ 144 fichiers par jour (3 partitions × 48 lots) au lieu d'une écriture par message ;
+  des lots de 5 minutes donnaient environ 850 fichiers de 1,6 Ko par jour.
 - Nom de fichier : partition et premier offset identifient exactement le contenu.
 
 ## Alternatives écartées
