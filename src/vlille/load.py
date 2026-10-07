@@ -76,8 +76,9 @@ def main() -> int:
     parser.add_argument(
         "--date",
         type=date.fromisoformat,
-        default=datetime.now(UTC).date(),
-        help="Jour à charger, AAAA-MM-JJ (UTC). Par défaut : aujourd'hui.",
+        nargs="+",
+        default=[datetime.now(UTC).date()],
+        help="Jour(s) à charger, AAAA-MM-JJ (UTC). Par défaut : aujourd'hui.",
     )
     args = parser.parse_args()
 
@@ -85,7 +86,8 @@ def main() -> int:
     project = env("GOOGLE_CLOUD_PROJECT")
     bucket = storage.Client(project=project).bucket(env("GCS_RAW_BUCKET"))
     bq = bigquery.Client(project=project)
-    load_day(bq, bucket, f"{project}.{env('BQ_DATASET_RAW')}", args.date)
+    for day in args.date:
+        load_day(bq, bucket, f"{project}.{env('BQ_DATASET_RAW')}", day)
     return 0
 
 

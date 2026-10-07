@@ -1,0 +1,12 @@
+# Liste blanche : seuls les fichiers nécessaires à l'image du projet sont envoyés à Docker.
+*
+!pyproject.toml
+!uv.lock
+!.python-version
+!README.md
+!src/
+!dbt/
+dbt/target/
+dbt/logs/
+dbt/.user.yml
+**/__pycache__/

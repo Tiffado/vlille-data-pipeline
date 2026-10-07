@@ -17,7 +17,7 @@ Projet personnel d'apprentissage. Une case cochée = étape réalisée et vérif
 - [x] 1.6 dbt : mart des stations vides ou pleines
 
 ## Phase 2 — Orchestration
-- [ ] 2.1 Airflow sous Docker Compose : DAG collecte → chargement → `dbt build`
+- [x] 2.1 Airflow sous Docker Compose : DAG collecte → chargement → `dbt build`
 
 ## Phase 3 — Temps réel
 - [ ] 3.1 Kafka local et producteur

@@ -38,9 +38,14 @@ Construction des modèles, du snapshot et tests de données :
 uv run --env-file .env dbt build --project-dir dbt --profiles-dir dbt
 ```
 
-Collecte planifiée provisoire (en attendant Airflow) : tâche du Planificateur Windows qui lance
-[`scripts/collecte_planifiee.cmd`](scripts/collecte_planifiee.cmd) toutes les 30 minutes, journal dans
-`logs/`.
+## Orchestration (Airflow)
+Airflow tourne en local sous Docker Compose (Docker Desktop requis). Le DAG `vlille_pipeline` enchaîne
+toutes les 30 minutes la collecte, le chargement (hier et aujourd'hui) et `dbt build`.
+```bash
+docker compose -f airflow/docker-compose.yml up -d --build
+```
+Interface : http://localhost:8080 (usage local, sans authentification). Arrêt :
+`docker compose -f airflow/docker-compose.yml down`.
 
 Ressources GCP utilisées : voir [`infra/`](infra/README.md).
 
@@ -54,3 +59,4 @@ Chaque choix est justifié dans un ADR court ([`docs/decisions/`](docs/decisions
 - [0006 — dbt Core : projet, connexion et couche staging](docs/decisions/0006-dbt-staging.md)
 - [0007 — Snapshot SCD2 des stations et faits incrémentaux](docs/decisions/0007-snapshot-et-faits-incrementaux.md)
 - [0008 — Mart de saturation quotidienne des stations](docs/decisions/0008-mart-saturation-quotidienne.md)
+- [0009 — Orchestration avec Airflow en local](docs/decisions/0009-orchestration-airflow.md)
