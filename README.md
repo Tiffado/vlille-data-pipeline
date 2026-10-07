@@ -7,6 +7,9 @@ Cloud, la modélise dans BigQuery avec dbt et orchestre les traitements par lots
 Le but est d'apprendre ces outils sur un cas concret, de bout en bout. Ce n'est pas un système de
 production : tout ce qui tourne en continu (Airflow, Kafka) tourne sur un poste personnel, sous Docker.
 
+Le projet a été mené en collaboration avec un assistant IA, pour comparer les choix techniques, écrire
+le code et les tests. Les décisions et leurs raisons sont consignées dans les [ADR](docs/decisions/).
+
 **Questions métier traitées :** quelles stations sont souvent vides ou pleines, et lesquelles demandent
 un rééquilibrage.
 
