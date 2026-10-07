@@ -85,6 +85,7 @@ Côté Google, sans dépendre du poste : suppression des fichiers de la zone bru
 | Airflow | Orchestration du batch : référentiel, chargement, dbt, toutes les 3 heures |
 | Kafka | Ingestion en continu des disponibilités des stations |
 | Data Studio | Tableau de bord public sur les marts |
+| Docker | Exécution locale d'Airflow, de Kafka, du producteur et du consommateur (Docker Compose) |
 
 La collecte et le chargement sont écrits en Python.
 
