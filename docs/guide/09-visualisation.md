@@ -5,10 +5,20 @@
 **[Ouvrir le tableau de bord](https://datastudio.google.com/reporting/94e9208b-e444-4b38-a2eb-7d2ecd21763e)**
 (public, sans compte)
 
-- **Carte** des stations, colorée selon la part du temps où elles sont vides.
-- **Tableau** des stations, triées de la plus souvent vide à la moins souvent vide, avec la part du
-  temps pleine.
-- **Sélecteur de période** : filtre la carte et le tableau.
+Deux pages :
+
+- **Saturation par jour** (table `mart_station_daily`) :
+  - carte des stations, colorée selon la part du temps où elles sont vides ;
+  - tableau des stations, triées de la plus souvent vide à la moins souvent vide, avec la part du
+    temps pleine ;
+  - sélecteur de période, qui filtre la carte et le tableau.
+- **État actuel** (table `mart_station_current`) : carte des stations, taille et couleur des bulles
+  selon le nombre de vélos disponibles à la dernière remontée ; l'info-bulle donne le nom de la station
+  et l'heure de cette remontée.
+
+« Actuel » signifie : dernière remontée chargée dans BigQuery, donc vieille de 3 h 30 au plus (lots de
+30 minutes du consommateur Kafka, puis chargement et dbt toutes les 3 heures). Le bouton **Trigger**
+du DAG dans Airflow rafraîchit immédiatement.
 
 ## Data Studio en bref
 
@@ -18,9 +28,12 @@ graphiques par glisser-déposer. Un rapport se partage par lien, comme un docume
 
 ## Comment il est branché
 
-- Source : une seule table, `vlille_dev.mart_station_daily`, une ligne par station et par jour.
-  Toute la logique (jointure SCD2, agrégation, besoin de rééquilibrage) est dans dbt ; l'outil de
+- Sources : une table par page, `vlille_dev.mart_station_daily` (une ligne par station et par jour) et
+  `vlille_dev.mart_station_current` (une ligne par station). Toute la logique (jointure SCD2,
+  agrégation, dernière remontée, besoin de rééquilibrage, libellés) est dans dbt ; l'outil de
   visualisation ne fait qu'afficher.
+- L'info-bulle d'une carte n'affiche qu'un champ texte : `mart_station_current` fournit
+  `station_label`, qui réunit le nom de la station et l'heure de sa remontée.
 - Le mart fournit la position au format attendu par la carte : colonne `location`,
   `latitude,longitude`, déclarée de type **Latitude, Longitude** dans la source.
 - Les parts (`share_empty`, `share_full`) sont déclarées en **Pourcentage**, agrégation **Moyenne** :

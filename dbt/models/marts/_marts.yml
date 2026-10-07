@@ -62,3 +62,18 @@ models:
               arguments:
                 values: ['apporter des vélos', 'retirer des vélos', 'aucun']
 
+  - name: mart_station_current
+    description: >
+      Une ligne par station : état à sa dernière remontée chargée dans BigQuery (vélos disponibles,
+      places libres, heure de la remontée, position). Lue par la carte « état actuel » du tableau de bord.
+    columns:
+      - name: station_id
+        data_tests:
+          - unique
+          - not_null
+      - name: num_bikes_available
+        data_tests:
+          - not_null
+      - name: location
+        data_tests:
+          - not_null
