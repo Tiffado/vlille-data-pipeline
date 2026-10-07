@@ -5,7 +5,8 @@ chapitre explique les outils et bibliothèques utilisés, comment ils fonctionne
 regarder pour voir le résultat. Il suppose des notions de développement et de data, pas de
 connaissance préalable des outils.
 
-Les commandes pour tout lancer sont regroupées dans [RUN.md](../RUN.md). Les justifications détaillées
+La vue d'ensemble de référence est dans [l'architecture technique](../architecture.md). Les commandes
+pour tout lancer sont regroupées dans [RUN.md](../RUN.md). Les justifications détaillées
 des choix sont dans les [ADR](../decisions/).
 
 | # | Chapitre | Outils |
