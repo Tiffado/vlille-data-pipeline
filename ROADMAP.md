@@ -25,4 +25,4 @@ Projet personnel d'apprentissage. Une case cochée = étape réalisée et vérif
 
 ## Finalisation
 - [x] Documentation : README avec schéma d'architecture, guide par étape, procédure de lancement
-- [ ] Dépôt public
+- [x] Dépôt public
