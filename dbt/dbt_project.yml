@@ -12,6 +12,9 @@ snapshot-paths: ["snapshots"]
 vars:
   # Les tables brutes exigent un filtre de partition : le staging lit à partir de cette date.
   start_date: "2026-10-01"
+  # Règle métier : une station vide (ou pleine) au moins sur cette part des remontées du jour
+  # signale un besoin de rééquilibrage.
+  rebalancing_threshold: 0.2
 
 models:
   vlille:

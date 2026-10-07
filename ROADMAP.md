@@ -14,7 +14,7 @@ Projet personnel d'apprentissage. Une case cochée = étape réalisée et vérif
 - [x] 1.3 Chargement dans BigQuery : table partitionnée
 - [x] 1.4 dbt : staging et tests
 - [x] 1.5 dbt : snapshot SCD2 des stations et faits incrémentaux
-- [ ] 1.6 dbt : mart des stations vides ou pleines
+- [x] 1.6 dbt : mart des stations vides ou pleines
 
 ## Phase 2 — Orchestration
 - [ ] 2.1 Airflow sous Docker Compose : DAG collecte → chargement → `dbt build`

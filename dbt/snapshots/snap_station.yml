@@ -8,3 +8,5 @@ snapshots:
       unique_key: station_id
       strategy: check
       check_cols: [station_name, capacity, latitude, longitude]
+      # Une station retirée du flux voit sa version courante fermée (dbt_valid_to renseigné).
+      hard_deletes: invalidate

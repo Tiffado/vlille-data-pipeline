@@ -22,3 +22,38 @@ models:
       - name: num_docks_available
         data_tests:
           - not_null
+
+  - name: dim_station
+    description: >
+      Versions des stations (snapshot SCD2) avec période de validité [valid_from, valid_to).
+      La première version est réputée valable depuis toujours.
+    columns:
+      - name: station_id
+        data_tests:
+          - not_null
+      - name: capacity
+        data_tests:
+          - not_null
+
+  - name: mart_station_daily
+    description: >
+      Une ligne par station et par jour (heure de Paris) : part des remontées où la station était
+      vide ou pleine, et besoin de rééquilibrage selon le seuil `rebalancing_threshold`.
+    columns:
+      - name: report_date
+        data_tests:
+          - not_null
+      - name: station_id
+        data_tests:
+          - not_null
+      - name: share_empty
+        description: Part des remontées du jour avec 0 vélo disponible.
+      - name: share_full
+        description: Part des remontées du jour avec 0 place libre.
+      - name: rebalancing_need
+        description: "« apporter des vélos », « retirer des vélos » ou vide."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['apporter des vélos', 'retirer des vélos']
+

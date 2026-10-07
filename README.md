@@ -28,7 +28,10 @@ uv run --env-file .env vlille-load --date 2026-10-06
 Modèles dbt (dans `dbt/`, dataset `vlille_dev`) :
 - `stg_station_status`, `stg_station_information` : JSON brut déplié, une ligne par station et par relevé ;
 - `snap_station` : historique SCD type 2 du référentiel des stations ;
-- `fct_station_status` : une ligne par remontée de station, table incrémentale.
+- `fct_station_status` : une ligne par remontée de station, table incrémentale ;
+- `dim_station` : versions des stations avec leur période de validité ;
+- `mart_station_daily` : par station et par jour, part du temps vide ou pleine (approximée par la part
+  des remontées) et besoin de rééquilibrage.
 
 Construction des modèles, du snapshot et tests de données :
 ```bash
@@ -50,3 +53,4 @@ Chaque choix est justifié dans un ADR court ([`docs/decisions/`](docs/decisions
 - [0005 — Tables brutes BigQuery](docs/decisions/0005-tables-brutes-bigquery.md)
 - [0006 — dbt Core : projet, connexion et couche staging](docs/decisions/0006-dbt-staging.md)
 - [0007 — Snapshot SCD2 des stations et faits incrémentaux](docs/decisions/0007-snapshot-et-faits-incrementaux.md)
+- [0008 — Mart de saturation quotidienne des stations](docs/decisions/0008-mart-saturation-quotidienne.md)
