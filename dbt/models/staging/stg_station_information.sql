@@ -1,4 +1,4 @@
--- Une ligne par station et par relevé du flux station_information.
+-- One row per station and per station_information feed.
 
 with raw as (
     select

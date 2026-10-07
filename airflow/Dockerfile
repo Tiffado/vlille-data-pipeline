@@ -1,10 +1,8 @@
 FROM apache/airflow:3.3.2-python3.12
 
-# uv, à version fixe, copié depuis son image officielle.
 COPY --from=ghcr.io/astral-sh/uv:0.12.23 /uv /usr/local/bin/uv
 
-# Le projet est installé dans son propre environnement virtuel : ses dépendances (dbt,
-# bibliothèques Google) restent séparées de celles d'Airflow.
+# The project gets its own virtualenv, so its dependencies do not clash with Airflow's.
 WORKDIR /opt/vlille
 ENV UV_PROJECT_ENVIRONMENT=/opt/vlille/.venv \
     UV_PYTHON_DOWNLOADS=never \

@@ -1,8 +1,7 @@
-"""Commande `vlille-consume` : écrit les messages Kafka dans la zone brute GCS, par lots.
+"""`vlille-consume`: writes Kafka messages to the GCS raw zone, in batches.
 
-Les offsets ne sont validés (commit) qu'après l'écriture dans GCS : en cas d'arrêt brutal, les
-messages non validés sont relus au redémarrage. Garantie « au moins une fois » : aucune perte,
-doublons possibles, éliminés en aval sur (station_id, last_reported).
+Offsets are committed only after the batch is written to GCS. If the consumer stops in between,
+the batch is read again on restart: at-least-once delivery, duplicates removed later in dbt.
 """
 
 import argparse
@@ -26,13 +25,13 @@ log = logging.getLogger("vlille.consume")
 
 
 def object_name(partition: int, first_offset: int, day: date) -> str:
-    """Ex. kafka/station_status/dt=2026-10-07/p1-000000000146.ndjson.gz"""
-    # Offset complété par des zéros : les fichiers d'une partition se trient dans l'ordre.
+    """e.g. kafka/station_status/dt=2026-10-07/p1-000000000146.ndjson.gz"""
+    # Zero-padded offset, so the files of a partition sort in order.
     return f"{KAFKA_PREFIX}/dt={day.isoformat()}/p{partition}-{first_offset:012d}.ndjson.gz"
 
 
 def write_batch(bucket: storage.Bucket, messages: list[Message], day: date) -> list[str]:
-    """Écrit un fichier par partition (une ligne JSON par message) et retourne les noms écrits."""
+    """Write one file per partition (one JSON line per message) and return the file names."""
     by_partition: dict[int, list[Message]] = defaultdict(list)
     for message in messages:
         by_partition[message.partition()].append(message)
@@ -48,7 +47,7 @@ def write_batch(bucket: storage.Bucket, messages: list[Message], day: date) -> l
 
 
 def flush(consumer: Consumer, bucket: storage.Bucket, batch: list[Message]) -> None:
-    """Écrit le lot dans GCS, puis valide les offsets : l'ordre garantit l'absence de perte."""
+    """Write the batch to GCS, then commit the offsets: this order means no message is lost."""
     today = datetime.now(UTC).date()
     names = write_batch(bucket, batch, today)
     consumer.commit(asynchronous=False)
@@ -57,9 +56,7 @@ def flush(consumer: Consumer, bucket: storage.Bucket, batch: list[Message]) -> N
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    # Lots de 30 minutes : environ 3 fichiers par demi-heure (un par partition) au lieu d'une
-    # multitude de petits fichiers ; BigQuery n'étant rafraîchi que toutes les 3 heures, ce délai
-    # ne retarde pas l'analyse.
+    # 30-minute batches avoid many small files; BigQuery is only refreshed every 3 hours anyway.
     parser.add_argument("--batch-size", type=int, default=10_000, help="Messages par lot.")
     parser.add_argument(
         "--batch-seconds", type=int, default=1800, help="Durée maximale d'un lot, en secondes."
@@ -72,9 +69,8 @@ def main() -> int:
         {
             "bootstrap.servers": env("KAFKA_BOOTSTRAP_SERVERS"),
             "group.id": GROUP_ID,
-            # Commit manuel, après l'écriture dans GCS.
+            # Offsets are committed manually, after writing to GCS.
             "enable.auto.commit": False,
-            # Premier démarrage du groupe : lire depuis le début du topic.
             "auto.offset.reset": "earliest",
         }
     )

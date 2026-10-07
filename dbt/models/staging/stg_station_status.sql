@@ -1,6 +1,4 @@
--- Une ligne par message Kafka : l'état d'une station à une remontée.
--- Garantie « au moins une fois » : un même message peut apparaître plusieurs fois,
--- le dédoublonnage est fait dans fct_station_status.
+-- One row per Kafka message. At-least-once delivery: duplicates are removed in fct_station_status.
 
 select
     string(payload.station_id) as station_id,

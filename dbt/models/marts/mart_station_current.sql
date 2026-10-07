@@ -1,5 +1,4 @@
--- État de chaque station à sa dernière remontée chargée dans BigQuery (rafraîchi toutes les 3 heures).
--- Table lue par la carte « état actuel » du tableau de bord.
+-- State of each station at its latest report loaded in BigQuery (dashboard "Etat actuel" page).
 
 with last_report as (
     select *
@@ -16,9 +15,8 @@ select
     last_report.is_installed,
     last_report.is_renting,
     last_report.last_reported_at,
-    -- Heure de Paris, lisible dans l'info-bulle de la carte.
     format_timestamp('%d/%m %H:%M', last_report.last_reported_at, 'Europe/Paris') as last_report_label,
-    -- Libellé de l'info-bulle : la carte n'affiche qu'une dimension.
+    -- Map tooltips show a single text field.
     concat(
         station.station_name,
         ' (remontée du ',

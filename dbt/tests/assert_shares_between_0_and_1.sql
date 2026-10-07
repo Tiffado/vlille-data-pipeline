@@ -1,4 +1,4 @@
--- Les parts vide et pleine sont des proportions.
+-- Shares are proportions.
 
 select *
 from {{ ref('mart_station_daily') }}

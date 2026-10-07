@@ -1,4 +1,4 @@
--- Le mart ne doit contenir qu'une ligne par station et par jour.
+-- One mart row per station and day.
 
 select
     report_date,

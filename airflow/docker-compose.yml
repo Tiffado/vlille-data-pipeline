@@ -1,6 +1,5 @@
-# Airflow local, version simplifiée du docker-compose officiel : LocalExecutor (le scheduler
-# exécute lui-même les tâches), sans Celery ni Redis.
-# Lancement depuis la racine du dépôt : docker compose -f airflow/docker-compose.yml up -d --build
+# Simplified version of the official Airflow docker-compose: LocalExecutor, no Celery or Redis.
+# From the repository root: docker compose -f airflow/docker-compose.yml up -d --build
 
 x-airflow-common: &airflow-common
   build:
@@ -15,10 +14,10 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-apiserver:8080/execution/
     AIRFLOW__CORE__LOAD_EXAMPLES: "false"
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
-    # Poste local : pas de compte à créer, tout utilisateur est administrateur.
+    # Local use only: no login, every user is admin.
     AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_ALL_ADMINS: "true"
     AIRFLOW__API_AUTH__JWT_SECRET: vlille-local-uniquement
-    # Identifiants GCP de l'utilisateur (gcloud auth application-default login), en lecture seule.
+    # User's GCP Application Default Credentials, read-only.
     GOOGLE_APPLICATION_CREDENTIALS: /opt/gcloud/application_default_credentials.json
   volumes:
     - ./dags:/opt/airflow/dags
@@ -54,7 +53,7 @@ services:
     <<: *airflow-common
     command: api-server
     ports:
-      # Port 8081 sur le poste : 8080 reste libre pour `dbt docs serve` (port par défaut).
+      # 8081 on the host: 8080 stays free for `dbt docs serve`.
       - "8081:8080"
     restart: always
     depends_on:

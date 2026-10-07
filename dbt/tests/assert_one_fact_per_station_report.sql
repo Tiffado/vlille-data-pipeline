@@ -1,4 +1,4 @@
--- La table de faits ne doit contenir qu'une ligne par remontée de station.
+-- One fact row per station report.
 
 select
     station_id,

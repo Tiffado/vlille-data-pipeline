@@ -1,10 +1,10 @@
-"""Lecture de la configuration (variables d'environnement, voir .env.example)."""
+"""Configuration read from environment variables (see .env.example)."""
 
 import os
 
 
 def env(name: str) -> str:
-    """Retourne la variable demandée ; arrête la commande avec un message clair si elle manque."""
+    """Return the variable, or stop the command with a clear message if it is missing."""
     value = os.environ.get(name)
     if not value:
         raise SystemExit(f"Variable d'environnement manquante : {name} (voir .env.example)")

@@ -1,5 +1,4 @@
--- Une ligne par remontée réelle d'une station : (station_id, last_reported_at).
--- Les messages Kafka en double (garantie au moins une fois) ne sont comptés qu'une fois.
+-- One row per station report (station_id, last_reported_at); Kafka duplicates are removed.
 
 {{
     config(
@@ -14,9 +13,7 @@ with status as (
     select *
     from {{ ref('stg_station_status') }}
     {% if is_incremental() %}
-    -- Relit les deux derniers jours de la table brute : un chargement en retard est rattrapé, et la
-    -- clé unique évite les doublons sur les lignes déjà présentes. Filtrer sur la partition
-    -- (ingestion_date) limite le volume lu.
+    -- Re-read the last two days of partitions to catch late loads; the merge key avoids duplicates.
     where ingestion_date >= date_sub(current_date(), interval 2 day)
     {% endif %}
 )
@@ -30,7 +27,6 @@ select
     is_renting,
     is_returning
 from status
--- Une même remontée peut figurer plusieurs fois : on n'en garde qu'une.
 qualify row_number() over (
     partition by station_id, last_reported_at order by feed_updated_at
 ) = 1

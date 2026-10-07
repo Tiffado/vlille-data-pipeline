@@ -1,1 +1,1 @@
-"""Collecte et préparation des données de disponibilité V'Lille."""
+"""V'Lille station availability pipeline."""

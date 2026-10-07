@@ -8,7 +8,7 @@ BASE = "https://media.ilevia.fr/opendata/"
 
 
 def make_client(routes: dict[str, httpx.Response]) -> GbfsClient:
-    """Client branché sur un faux transport : chaque URL renvoie la réponse prévue, sinon 404."""
+    """Client on a fake transport: each URL returns its planned response, else 404."""
 
     def handler(request: httpx.Request) -> httpx.Response:
         return routes.get(str(request.url), httpx.Response(404))

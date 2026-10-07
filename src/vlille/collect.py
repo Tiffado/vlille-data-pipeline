@@ -1,8 +1,7 @@
-"""Commande `vlille-collect` : collecte le référentiel des stations, l'archive et le valide.
+"""`vlille-collect`: archives and validates the station reference data (station_information).
 
-Seul le flux `station_information` est collecté ici ; les disponibilités (`station_status`) arrivent
-par Kafka (`vlille-produce`, `vlille-consume`). L'archivage précède la validation : une réponse
-invalide est conservée telle que reçue, mais la commande se termine en erreur pour la signaler.
+Station availability (station_status) comes through Kafka instead. The response is archived before
+validation, so an invalid response is kept as evidence, but the command exits with an error.
 """
 
 import logging
@@ -26,7 +25,7 @@ log = logging.getLogger("vlille.collect")
 
 
 def collect(gbfs: GbfsClient, store: RawStore) -> bool:
-    """Archive puis valide chaque flux. Retourne False si au moins un flux est invalide."""
+    """Archive then validate each feed. Return False if a feed is invalid."""
     all_valid = True
     for feed, model in FEEDS.items():
         raw = gbfs.fetch_raw(feed)

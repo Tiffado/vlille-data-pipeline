@@ -1,8 +1,7 @@
-"""Commande `vlille-produce` : publie dans Kafka chaque nouvelle remontée de station.
+"""`vlille-produce`: publishes each new station report to Kafka.
 
-Le flux station_status est interrogé à intervalle régulier. Un message est publié pour chaque
-station dont `last_reported` a changé depuis le passage précédent, avec `station_id` comme clé :
-tous les messages d'une station vont dans la même partition, donc restent dans l'ordre.
+Polls station_status and publishes one message per station whose `last_reported` changed. The key
+is `station_id`, so all messages of a station go to the same partition and stay in order.
 """
 
 import json
@@ -27,7 +26,7 @@ log = logging.getLogger("vlille.produce")
 
 
 def new_reports(feed: StationStatusFeed, last_seen: dict[str, datetime]) -> list[StationStatus]:
-    """Retourne les stations dont la remontée n'a pas encore été vue, et met à jour `last_seen`."""
+    """Return the stations with a report not seen yet, and update `last_seen`."""
     changed = []
     for station in feed.data.stations:
         if last_seen.get(station.station_id) != station.last_reported:
@@ -37,14 +36,14 @@ def new_reports(feed: StationStatusFeed, last_seen: dict[str, datetime]) -> list
 
 
 def to_message(station: StationStatus, feed_updated_at: datetime) -> bytes:
-    """Message JSON : l'état de la station et l'horodatage du relevé qui l'a fourni."""
+    """JSON message: the station state and the time of the feed it came from."""
     message = station.model_dump(mode="json")
     message["feed_updated_at"] = feed_updated_at.isoformat()
     return json.dumps(message).encode()
 
 
 def publish(producer: Producer, stations: list[StationStatus], feed_updated_at: datetime) -> None:
-    """Publie un message par station, puis attend la confirmation du broker."""
+    """Publish one message per station, then wait for the broker acknowledgements."""
     for station in stations:
         producer.produce(TOPIC, key=station.station_id, value=to_message(station, feed_updated_at))
     undelivered = producer.flush(timeout=30)
@@ -54,7 +53,7 @@ def publish(producer: Producer, stations: list[StationStatus], feed_updated_at: 
 
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
-    # acks=all : un message n'est confirmé qu'une fois écrit par toutes les répliques en ligne.
+    # acks=all: a message is acknowledged once written by all in-sync replicas.
     producer = Producer({"bootstrap.servers": env("KAFKA_BOOTSTRAP_SERVERS"), "acks": "all"})
     last_seen: dict[str, datetime] = {}
 
@@ -69,7 +68,7 @@ def main() -> int:
                     publish(producer, changed, feed.last_updated)
                     log.info("%d remontée(s) nouvelle(s) publiée(s)", len(changed))
                 except (httpx.HTTPError, GbfsError, ValidationError) as exc:
-                    # Erreur passagère de la source : journalisée, nouvel essai au tour suivant.
+                    # Transient source error: log it and retry on the next poll.
                     log.error("Relevé ignoré : %s", exc)
                 time.sleep(POLL_SECONDS)
         except KeyboardInterrupt:

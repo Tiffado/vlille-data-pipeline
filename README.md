@@ -95,7 +95,6 @@ La collecte et le chargement sont écrits en Python.
 |---|---|
 | [Liens utiles](docs/liens.md) | Interfaces locales (Airflow, dbt), consoles GCP, GitHub, source de données, documentation des outils |
 | [Architecture technique](docs/architecture.md) | Traitements et horaires, conteneurs, stockage, tables, garanties, limites |
-| [Guide du projet](docs/guide/README.md) | Les étapes de mise en place, une par chapitre : outils, bibliothèques, fonctionnement, où regarder |
 | [Lancer le projet (RUN)](docs/RUN.md) | Installation, toutes les commandes, redémarrage après un reboot, dépannage |
 | [Décisions techniques (ADR)](docs/decisions/) | Pourquoi chaque choix, alternatives écartées, limites |
 | [Ressources GCP](infra/README.md) | Commandes de création du bucket et des tables |
