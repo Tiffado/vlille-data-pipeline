@@ -80,6 +80,7 @@ Côté Google, sans dépendre du poste : suppression des fichiers de la zone bru
 
 | Document | Contenu |
 |---|---|
+| [Liens utiles](docs/liens.md) | Interfaces locales (Airflow, dbt), consoles GCP, GitHub, source de données, documentation des outils |
 | [Architecture technique](docs/architecture.md) | Traitements et horaires, conteneurs, stockage, tables, garanties, limites |
 | [Guide du projet](docs/guide/README.md) | Les étapes de mise en place, une par chapitre : outils, bibliothèques, fonctionnement, où regarder |
 | [Lancer le projet (RUN)](docs/RUN.md) | Installation, toutes les commandes, redémarrage après un reboot, dépannage |
@@ -100,7 +101,7 @@ docker compose -f airflow/docker-compose.yml up -d --build
 docker compose -f kafka/docker-compose.yml up -d --build
 ```
 
-Interfaces locales :
+Interfaces locales (tous les liens : [docs/liens.md](docs/liens.md)) :
 
 | Interface | Adresse |
 |---|---|

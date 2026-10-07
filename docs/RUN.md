@@ -1,6 +1,7 @@
 # Lancer le projet
 
 Procédure pour un poste Windows avec PowerShell. Les commandes se lancent depuis la racine du dépôt.
+Tous les liens (interfaces, consoles) : [liens.md](liens.md).
 
 - [Après un redémarrage du PC](#après-un-redémarrage-du-pc) : la procédure courante
 - [Première installation](#première-installation)
