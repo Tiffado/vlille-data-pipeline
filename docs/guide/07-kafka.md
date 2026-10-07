@@ -1,6 +1,8 @@
 # 7. Temps réel avec Kafka
 
-Cette partie existe pour apprendre Kafka : au volume du projet, la collecte batch suffirait.
+Kafka est la **seule voie d'entrée des disponibilités** des stations : chaque changement d'état d'une
+station devient un message, jusqu'à la zone brute puis BigQuery. Au volume du projet, une collecte
+batch suffirait : le choix de Kafka est d'abord un choix d'apprentissage, assumé.
 
 ## Kafka en bref
 
@@ -46,7 +48,8 @@ Une ligne JSON par message, sans transformation. Les offsets sont validés **apr
 d'arrêt brutal, le lot non validé est relu et réécrit au redémarrage. Garantie **au moins une fois** :
 aucune perte, doublons possibles (éliminés en aval sur `(station_id, last_reported)`).
 
-Ces fichiers ne sont pas chargés dans BigQuery : hors du périmètre du projet.
+Ces fichiers sont chargés dans la table `vlille_raw.raw_station_status_stream` par `vlille-load`, sous
+Airflow, toutes les 3 heures ([chapitre 4](04-bigquery.md)).
 
 ## En conteneurs
 

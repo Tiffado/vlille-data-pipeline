@@ -2,7 +2,9 @@ version: 2
 
 models:
   - name: stg_station_status
-    description: Disponibilité de chaque station à chaque relevé du flux station_status.
+    description: >
+      Disponibilité des stations, une ligne par message Kafka (doublons possibles, garantie au moins
+      une fois).
     columns:
       - name: station_id
         data_tests:
@@ -22,9 +24,11 @@ models:
         data_tests:
           - not_null
       - name: feed_updated_at
-        description: Horodatage du relevé (last_updated du flux).
+        description: Horodatage du relevé qui a fourni l'information (last_updated du flux).
         data_tests:
           - not_null
+      - name: ingestion_date
+        description: Jour d'écriture du message dans la zone brute (partition de la table brute).
 
   - name: stg_station_information
     description: Référentiel des stations à chaque relevé du flux station_information.

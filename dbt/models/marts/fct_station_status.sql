@@ -1,5 +1,5 @@
 -- Une ligne par remontée réelle d'une station : (station_id, last_reported_at).
--- Une station sans nouvelle information entre deux relevés n'est comptée qu'une fois.
+-- Les messages Kafka en double (garantie au moins une fois) ne sont comptés qu'une fois.
 
 {{
     config(
@@ -14,11 +14,10 @@ with status as (
     select *
     from {{ ref('stg_station_status') }}
     {% if is_incremental() %}
-    -- Relit les dernières 24 heures : un relevé chargé en retard est rattrapé, et la clé unique
-    -- évite les doublons sur les lignes déjà présentes.
-    where feed_updated_at >= (
-        select timestamp_sub(max(last_reported_at), interval 24 hour) from {{ this }}
-    )
+    -- Relit les deux derniers jours de la table brute : un chargement en retard est rattrapé, et la
+    -- clé unique évite les doublons sur les lignes déjà présentes. Filtrer sur la partition
+    -- (ingestion_date) limite le volume lu.
+    where ingestion_date >= date_sub(current_date(), interval 2 day)
     {% endif %}
 )
 
@@ -31,7 +30,7 @@ select
     is_renting,
     is_returning
 from status
--- Une même remontée peut figurer dans plusieurs relevés : on n'en garde qu'une.
+-- Une même remontée peut figurer plusieurs fois : on n'en garde qu'une.
 qualify row_number() over (
     partition by station_id, last_reported_at order by feed_updated_at
 ) = 1

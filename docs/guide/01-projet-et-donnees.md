@@ -38,8 +38,8 @@ Le projet utilise deux flux :
 
 | Flux | Contenu | Rôle en modélisation |
 |---|---|---|
-| `station_information` | 268 stations : identifiant, nom, capacité, latitude, longitude | **dimension** (référentiel) |
-| `station_status` | par station : vélos disponibles, places libres, état, date de dernière remontée | **faits** (mesures horodatées) |
+| `station_information` | 268 stations : identifiant, nom, capacité, latitude, longitude | **dimension** (référentiel), collecté par le batch |
+| `station_status` | par station : vélos disponibles, places libres, état, date de dernière remontée | **faits** (mesures horodatées), collecté par Kafka |
 
 Exemple de statut d'une station :
 

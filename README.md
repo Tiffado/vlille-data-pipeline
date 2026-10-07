@@ -16,16 +16,16 @@ un rééquilibrage.
 flowchart LR
     API["API GBFS V'Lille<br/>(Ilévia, open data)"]
 
-    subgraph Batch["Batch — toutes les 30 min, orchestré par Airflow"]
-        COLLECT["vlille-collect<br/>collecte + validation"]
-        LOAD["vlille-load<br/>chargement"]
-        DBT["dbt build<br/>modèles + tests"]
-    end
-
-    subgraph Streaming["Temps réel — Kafka local"]
+    subgraph Streaming["Disponibilités — en continu, Kafka local"]
         PRODUCE["vlille-produce<br/>chaque minute"]
         TOPIC[("topic<br/>vlille.station_status")]
-        CONSUME["vlille-consume<br/>par lots"]
+        CONSUME["vlille-consume<br/>lots de 5 min"]
+    end
+
+    subgraph Batch["Batch — toutes les 3 h, orchestré par Airflow"]
+        COLLECT["vlille-collect<br/>référentiel des stations"]
+        LOAD["vlille-load<br/>chargement"]
+        DBT["dbt build<br/>modèles + tests"]
     end
 
     subgraph GCP["Google Cloud (europe-west1)"]
@@ -34,21 +34,24 @@ flowchart LR
         DEV[("BigQuery<br/>vlille_dev")]
     end
 
-    API --> COLLECT --> GCS
-    GCS --> LOAD --> RAW
-    RAW --> DBT --> DEV
-    API --> PRODUCE --> TOPIC --> CONSUME --> GCS
+    API -- station_status --> PRODUCE --> TOPIC --> CONSUME --> GCS
+    API -- station_information --> COLLECT --> GCS
+    GCS --> LOAD --> RAW --> DBT --> DEV
 ```
+
+Chaque donnée a une seule voie d'entrée : les **disponibilités** des stations arrivent en continu par
+Kafka, le **référentiel** des stations (nom, capacité, position) par la collecte batch. Le batch
+charge ensuite les deux dans BigQuery et reconstruit les modèles dbt.
 
 | Couche | Outil | Rôle dans le projet |
 |---|---|---|
 | Source | [GBFS](https://gbfs.org/) V'Lille | Flux JSON public : référentiel des stations et disponibilité, rafraîchi chaque minute |
-| Collecte | Python 3.12 ([httpx](https://www.python-httpx.org/), [pydantic](https://docs.pydantic.dev/)) | Télécharge, archive et valide les flux |
+| Collecte | Python 3.12 ([httpx](https://www.python-httpx.org/), [pydantic](https://docs.pydantic.dev/)) | Télécharge, archive et valide le référentiel des stations |
 | Zone brute | [Cloud Storage](https://cloud.google.com/storage/docs) | Réponses conservées telles que reçues, 30 jours |
 | Entrepôt | [BigQuery](https://cloud.google.com/bigquery/docs) | Tables brutes partitionnées, puis tables modélisées |
 | Transformation | [dbt Core](https://docs.getdbt.com/) | SQL versionné et testé : staging, historique SCD2, faits, mart |
-| Orchestration | [Apache Airflow 3](https://airflow.apache.org/docs/) | Enchaîne collecte → chargement → dbt toutes les 30 minutes |
-| Temps réel | [Apache Kafka 4](https://kafka.apache.org/documentation/) | Publie chaque nouvelle remontée de station, écrite par lots dans GCS |
+| Orchestration | [Apache Airflow 3](https://airflow.apache.org/docs/) | Enchaîne collecte du référentiel → chargement → dbt toutes les 3 heures |
+| Temps réel | [Apache Kafka 4](https://kafka.apache.org/documentation/) | Transporte chaque nouvelle remontée de station jusqu'à la zone brute |
 | Outillage | [uv](https://docs.astral.sh/uv/), [pytest](https://docs.pytest.org/), [ruff](https://docs.astral.sh/ruff/), [Docker](https://docs.docker.com/), GitHub Actions | Environnement reproductible, tests, lint, conteneurs, CI |
 
 ## Documentation
@@ -99,4 +102,4 @@ docs/                guide, procédure de lancement, décisions (ADR)
   Docker Desktop lancé : les données ont des trous.
 - Kafka n'a qu'un broker, donc aucune réplication.
 - Les indicateurs du mart sont calculés sur le nombre de remontées, approximation de la durée.
-- Les fichiers écrits par le consommateur Kafka ne sont pas chargés dans BigQuery.
+- BigQuery est rafraîchi toutes les 3 heures : la collecte est continue, l'analyse ne l'est pas.

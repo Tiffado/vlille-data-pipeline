@@ -1,7 +1,10 @@
 """Commande `vlille-load` : charge un jour de la zone brute GCS dans les tables brutes BigQuery.
 
-Chaque fichier devient une ligne (horodatage, chemin d'origine, réponse JSON complète). La partition
-du jour est remplacée entièrement : recharger un jour donne toujours le même résultat (idempotence).
+- Référentiel des stations (`gbfs/station_information/`) : un fichier devient une ligne.
+- Événements Kafka (`kafka/station_status/`) : une ligne de fichier (un message) devient une ligne.
+
+La partition du jour est remplacée entièrement : recharger un jour donne toujours le même résultat
+(idempotence).
 """
 
 import argparse
@@ -13,15 +16,19 @@ from datetime import UTC, date, datetime
 
 from google.cloud import bigquery, storage
 
-from vlille.raw_store import PREFIX, read_last_updated
+from vlille.paths import GBFS_PREFIX, KAFKA_PREFIX
+from vlille.raw_store import read_last_updated
 from vlille.settings import env
 
-FEEDS = ("station_information", "station_status")
-
-# Schéma des tables brutes (identique à infra/raw_table_schema.json). Sans schéma explicite,
-# BigQuery déduirait `payload` comme une structure imbriquée au lieu d'une colonne JSON.
+# Schémas des tables brutes (identiques aux fichiers de infra/). Sans schéma explicite, BigQuery
+# déduirait `payload` comme une structure imbriquée au lieu d'une colonne JSON.
 RAW_SCHEMA = [
     bigquery.SchemaField("last_updated", "TIMESTAMP", mode="REQUIRED"),
+    bigquery.SchemaField("source_uri", "STRING", mode="REQUIRED"),
+    bigquery.SchemaField("payload", "JSON", mode="REQUIRED"),
+]
+STREAM_SCHEMA = [
+    bigquery.SchemaField("ingestion_date", "DATE", mode="REQUIRED"),
     bigquery.SchemaField("source_uri", "STRING", mode="REQUIRED"),
     bigquery.SchemaField("payload", "JSON", mode="REQUIRED"),
 ]
@@ -29,10 +36,11 @@ RAW_SCHEMA = [
 log = logging.getLogger("vlille.load")
 
 
-def read_day(bucket: storage.Bucket, feed: str, day: date) -> list[dict]:
-    """Lit les fichiers d'un flux pour un jour et les convertit en lignes de la table brute."""
+def read_station_information(bucket: storage.Bucket, day: date) -> list[dict]:
+    """Lit les fichiers du référentiel d'un jour : un fichier devient une ligne."""
     rows = []
-    for blob in bucket.list_blobs(prefix=f"{PREFIX}/{feed}/dt={day.isoformat()}/"):
+    prefix = f"{GBFS_PREFIX}/station_information/dt={day.isoformat()}/"
+    for blob in bucket.list_blobs(prefix=prefix):
         payload = gzip.decompress(blob.download_as_bytes())
         rows.append(
             {
@@ -44,31 +52,55 @@ def read_day(bucket: storage.Bucket, feed: str, day: date) -> list[dict]:
     return rows
 
 
+def read_station_events(bucket: storage.Bucket, day: date) -> list[dict]:
+    """Lit les fichiers du consommateur Kafka d'un jour : un message devient une ligne."""
+    rows = []
+    for blob in bucket.list_blobs(prefix=f"{KAFKA_PREFIX}/dt={day.isoformat()}/"):
+        content = gzip.decompress(blob.download_as_bytes())
+        for line in content.splitlines():
+            rows.append(
+                {
+                    "ingestion_date": day.isoformat(),
+                    "source_uri": f"gs://{bucket.name}/{blob.name}",
+                    "payload": json.loads(line),
+                }
+            )
+    return rows
+
+
+def replace_partition(
+    bq: bigquery.Client, table: str, day: date, rows: list[dict], schema: list
+) -> int:
+    """Remplace la partition du jour de la table par les lignes données ; retourne leur nombre."""
+    if not rows:
+        log.warning("%s : aucune donnée pour le %s, partition inchangée", table, day)
+        return 0
+    # Le suffixe $AAAAMMJJ cible une seule partition ; WRITE_TRUNCATE la remplace.
+    partition = f"{table}${day.strftime('%Y%m%d')}"
+    job_config = bigquery.LoadJobConfig(
+        source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
+        schema=schema,
+        write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
+    )
+    bq.load_table_from_json(rows, partition, job_config=job_config).result()
+    log.info("%d ligne(s) chargée(s) dans %s", len(rows), partition)
+    return len(rows)
+
+
 def load_day(
     bq: bigquery.Client, bucket: storage.Bucket, dataset: str, day: date
 ) -> dict[str, int]:
-    """Remplace la partition du jour de chaque table brute.
-
-    Retourne le nombre de lignes chargées par flux.
-    """
-    loaded = {}
-    for feed in FEEDS:
-        rows = read_day(bucket, feed, day)
-        if not rows:
-            log.warning("%s : aucun fichier pour le %s, partition inchangée", feed, day)
-            loaded[feed] = 0
-            continue
-        # Le suffixe $AAAAMMJJ cible une seule partition ; WRITE_TRUNCATE la remplace.
-        table = f"{dataset}.raw_{feed}${day.strftime('%Y%m%d')}"
-        job_config = bigquery.LoadJobConfig(
-            source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
-            schema=RAW_SCHEMA,
-            write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
-        )
-        bq.load_table_from_json(rows, table, job_config=job_config).result()
-        log.info("%s : %d ligne(s) chargée(s) dans %s", feed, len(rows), table)
-        loaded[feed] = len(rows)
-    return loaded
+    """Charge un jour dans les deux tables brutes. Retourne le nombre de lignes par table."""
+    information = read_station_information(bucket, day)
+    events = read_station_events(bucket, day)
+    return {
+        "raw_station_information": replace_partition(
+            bq, f"{dataset}.raw_station_information", day, information, RAW_SCHEMA
+        ),
+        "raw_station_status_stream": replace_partition(
+            bq, f"{dataset}.raw_station_status_stream", day, events, STREAM_SCHEMA
+        ),
+    }
 
 
 def main() -> int:

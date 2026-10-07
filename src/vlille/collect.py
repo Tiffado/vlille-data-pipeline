@@ -1,7 +1,8 @@
-"""Commande `vlille-collect` : collecte les flux GBFS, les archive dans la zone brute, les valide.
+"""Commande `vlille-collect` : collecte le référentiel des stations, l'archive et le valide.
 
-L'archivage précède la validation : une réponse invalide est conservée telle que reçue, mais la
-commande se termine en erreur pour la signaler.
+Seul le flux `station_information` est collecté ici ; les disponibilités (`station_status`) arrivent
+par Kafka (`vlille-produce`, `vlille-consume`). L'archivage précède la validation : une réponse
+invalide est conservée telle que reçue, mais la commande se termine en erreur pour la signaler.
 """
 
 import logging
@@ -12,13 +13,12 @@ from google.cloud import storage
 from pydantic import BaseModel, ValidationError
 
 from vlille.client import GbfsClient
-from vlille.models import StationInformationFeed, StationStatusFeed
+from vlille.models import StationInformationFeed
 from vlille.raw_store import RawStore
 from vlille.settings import env
 
 FEEDS: dict[str, type[BaseModel]] = {
     "station_information": StationInformationFeed,
-    "station_status": StationStatusFeed,
 }
 HTTP_TIMEOUT_SECONDS = 10
 

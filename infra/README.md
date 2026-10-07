@@ -9,10 +9,18 @@ gcloud storage buckets update gs://vlille-pipeline-raw --lifecycle-file=infra/gc
 ```
 
 ## Tables brutes BigQuery
-Une ligne par fichier de la zone brute ; partition par jour sur `last_updated`, filtre de partition
-obligatoire.
+Partition par jour, filtre de partition obligatoire.
+
 ```bash
 bq mk --dataset --location=europe-west1 vlille-pipeline:vlille_raw
-bq mk --table --time_partitioning_field=last_updated --time_partitioning_type=DAY --require_partition_filter=true vlille-pipeline:vlille_raw.raw_station_status infra/raw_table_schema.json
+```
+
+Référentiel des stations (batch), une ligne par fichier :
+```bash
 bq mk --table --time_partitioning_field=last_updated --time_partitioning_type=DAY --require_partition_filter=true vlille-pipeline:vlille_raw.raw_station_information infra/raw_table_schema.json
+```
+
+Disponibilités (Kafka), une ligne par message :
+```bash
+bq mk --table --time_partitioning_field=ingestion_date --time_partitioning_type=DAY --require_partition_filter=true vlille-pipeline:vlille_raw.raw_station_status_stream infra/stream_table_schema.json
 ```

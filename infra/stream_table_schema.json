@@ -1,0 +1,5 @@
+[
+  {"name": "ingestion_date", "type": "DATE", "mode": "REQUIRED", "description": "Jour d'écriture du fichier par le consommateur Kafka (partition)"},
+  {"name": "source_uri", "type": "STRING", "mode": "REQUIRED", "description": "Fichier d'origine dans la zone brute GCS"},
+  {"name": "payload", "type": "JSON", "mode": "REQUIRED", "description": "Message Kafka : état d'une station"}
+]

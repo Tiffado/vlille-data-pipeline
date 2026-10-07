@@ -1,7 +1,7 @@
 # 0010 — Kafka local et producteur des remontées de stations
 
 - Date : 2026-10-07
-- Statut : accepté
+- Statut : accepté, modifié par l'[ADR 0013](0013-kafka-source-des-disponibilites.md)
 
 ## Contexte
 La collecte batch photographie l'API toutes les 30 minutes. L'objectif de la phase 3 est d'apprendre

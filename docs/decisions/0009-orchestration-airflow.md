@@ -1,7 +1,7 @@
 # 0009 — Orchestration avec Airflow en local
 
 - Date : 2026-10-07
-- Statut : accepté
+- Statut : accepté, modifié par l'[ADR 0013](0013-kafka-source-des-disponibilites.md)
 
 ## Contexte
 La collecte, le chargement et les modèles dbt sont trois commandes à enchaîner dans l'ordre. Le snapshot

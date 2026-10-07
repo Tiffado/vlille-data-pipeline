@@ -57,7 +57,7 @@ Puis redémarrer Airflow et le consommateur Kafka pour qu'ils relisent le fichie
 ### 4. Contrôler Airflow
 
 Ouvrir <http://localhost:8081>, DAG **vlille_pipeline** : il doit être actif (interrupteur allumé) et un
-run doit apparaître dans les 30 minutes. **Trigger** lance un run immédiatement.
+run doit apparaître dans les 3 heures. **Trigger** lance un run immédiatement.
 
 ### 5. Contrôler le temps réel
 
