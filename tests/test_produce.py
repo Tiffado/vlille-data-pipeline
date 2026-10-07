@@ -46,7 +46,7 @@ def test_message_contains_station_state_and_feed_time(feed):
 
     assert message["station_id"] == "2"
     assert message["num_docks_available"] == 31
-    assert message["last_reported"] == station.last_reported.isoformat().replace("+00:00", "Z")
+    assert message["last_reported"] == "2026-10-06T15:10:10Z"
     assert message["feed_updated_at"] == "2026-10-06T15:12:02+00:00"
 
 

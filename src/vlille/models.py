@@ -30,23 +30,25 @@ class StationStatus(BaseModel):
     last_reported: datetime
 
 
-class _StationInformationData(BaseModel):
+class StationInformationData(BaseModel):
     stations: list[StationInformation]
 
 
-class _StationStatusData(BaseModel):
+class StationStatusData(BaseModel):
     stations: list[StationStatus]
 
 
-class _Feed(BaseModel):
+class GbfsFeed(BaseModel):
+    """En-tête commun à tous les flux GBFS."""
+
     last_updated: datetime
     ttl: int = Field(ge=0)
     version: str
 
 
-class StationInformationFeed(_Feed):
-    data: _StationInformationData
+class StationInformationFeed(GbfsFeed):
+    data: StationInformationData
 
 
-class StationStatusFeed(_Feed):
-    data: _StationStatusData
+class StationStatusFeed(GbfsFeed):
+    data: StationStatusData

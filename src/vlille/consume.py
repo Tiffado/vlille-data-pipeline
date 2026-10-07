@@ -27,10 +27,11 @@ log = logging.getLogger("vlille.consume")
 
 def object_name(partition: int, first_offset: int, day: date) -> str:
     """Ex. kafka/station_status/dt=2026-10-07/p1-000000000146.ndjson.gz"""
-    return f"{PREFIX}/dt={day:%Y-%m-%d}/p{partition}-{first_offset:012d}.ndjson.gz"
+    # Offset complété par des zéros : les fichiers d'une partition se trient dans l'ordre.
+    return f"{PREFIX}/dt={day.isoformat()}/p{partition}-{first_offset:012d}.ndjson.gz"
 
 
-def write_batch(bucket: storage.Bucket, messages: list[Message]) -> list[str]:
+def write_batch(bucket: storage.Bucket, messages: list[Message], day: date) -> list[str]:
     """Écrit un fichier par partition (une ligne JSON par message) et retourne les noms écrits."""
     by_partition: dict[int, list[Message]] = defaultdict(list)
     for message in messages:
@@ -38,10 +39,8 @@ def write_batch(bucket: storage.Bucket, messages: list[Message]) -> list[str]:
 
     names = []
     for partition, partition_messages in sorted(by_partition.items()):
-        first = partition_messages[0]
-        _, timestamp_ms = first.timestamp()
-        day = datetime.fromtimestamp(timestamp_ms / 1000, tz=UTC).date()
-        name = object_name(partition, first.offset(), day)
+        first_offset = partition_messages[0].offset()
+        name = object_name(partition, first_offset, day)
         lines = b"\n".join(message.value() for message in partition_messages) + b"\n"
         bucket.blob(name).upload_from_string(gzip.compress(lines), content_type="application/gzip")
         names.append(name)
@@ -50,7 +49,8 @@ def write_batch(bucket: storage.Bucket, messages: list[Message]) -> list[str]:
 
 def flush(consumer: Consumer, bucket: storage.Bucket, batch: list[Message]) -> None:
     """Écrit le lot dans GCS, puis valide les offsets : l'ordre garantit l'absence de perte."""
-    names = write_batch(bucket, batch)
+    today = datetime.now(UTC).date()
+    names = write_batch(bucket, batch, today)
     consumer.commit(asynchronous=False)
     log.info("%d message(s) écrit(s) dans %d fichier(s), offsets validés", len(batch), len(names))
 
@@ -91,8 +91,10 @@ def main() -> int:
                     batch_started = time.monotonic()
                 batch.append(message)
 
+            if len(batch) == 0:
+                continue
             batch_is_full = len(batch) >= args.batch_size
-            batch_is_old = batch and time.monotonic() - batch_started >= args.batch_seconds
+            batch_is_old = time.monotonic() - batch_started >= args.batch_seconds
             if batch_is_full or batch_is_old:
                 flush(consumer, bucket, batch)
                 batch = []

@@ -62,13 +62,12 @@ class FakeProducer:
 
 
 class FakeMessage:
-    """Message Kafka minimal : partition, offset, horodatage (ms) et valeur."""
+    """Message Kafka minimal : partition, offset et valeur."""
 
-    def __init__(self, partition: int, offset: int, value: bytes, timestamp_ms: int) -> None:
+    def __init__(self, partition: int, offset: int, value: bytes) -> None:
         self._partition = partition
         self._offset = offset
         self._value = value
-        self._timestamp_ms = timestamp_ms
 
     def partition(self) -> int:
         return self._partition
@@ -78,9 +77,6 @@ class FakeMessage:
 
     def value(self) -> bytes:
         return self._value
-
-    def timestamp(self) -> tuple[int, int]:
-        return 1, self._timestamp_ms
 
 
 class FakeConsumer:
