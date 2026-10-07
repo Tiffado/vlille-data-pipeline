@@ -25,6 +25,11 @@ Chargement d'un jour dans les tables brutes BigQuery (remplace la partition du j
 ```bash
 uv run --env-file .env vlille-load --date 2026-10-06
 ```
+Modèles dbt (dans `dbt/`, dataset `vlille_dev`) : construction des vues et tests de données :
+```bash
+uv run --env-file .env dbt build --project-dir dbt --profiles-dir dbt
+```
+
 Collecte planifiée provisoire (en attendant Airflow) : tâche du Planificateur Windows qui lance
 [`scripts/collecte_planifiee.cmd`](scripts/collecte_planifiee.cmd) toutes les 30 minutes, journal dans
 `logs/`.
@@ -38,3 +43,4 @@ Chaque choix est justifié dans un ADR court ([`docs/decisions/`](docs/decisions
 - [0003 — GCP : région, authentification et maîtrise des coûts](docs/decisions/0003-gcp-region-auth-couts.md)
 - [0004 — Zone brute dans Cloud Storage](docs/decisions/0004-zone-brute-gcs.md)
 - [0005 — Tables brutes BigQuery](docs/decisions/0005-tables-brutes-bigquery.md)
+- [0006 — dbt Core : projet, connexion et couche staging](docs/decisions/0006-dbt-staging.md)

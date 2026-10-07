@@ -1,0 +1,12 @@
+# Connexion à BigQuery. Aucun secret : l'authentification passe par les Application Default
+# Credentials (gcloud auth application-default login).
+vlille:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('GOOGLE_CLOUD_PROJECT') }}"
+      dataset: vlille_dev
+      location: europe-west1
+      threads: 4

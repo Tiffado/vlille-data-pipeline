@@ -12,7 +12,7 @@ Projet personnel d'apprentissage. Une case cochée = étape réalisée et vérif
 - [x] 1.1 Client GBFS V'Lille : collecte, validation, tests
 - [x] 1.2 Zone brute GCS : réponses archivées telles que reçues, partitionnées par jour
 - [x] 1.3 Chargement dans BigQuery : table partitionnée
-- [ ] 1.4 dbt : staging et tests
+- [x] 1.4 dbt : staging et tests
 - [ ] 1.5 dbt : snapshot SCD2 des stations et faits incrémentaux
 - [ ] 1.6 dbt : mart des stations vides ou pleines
 

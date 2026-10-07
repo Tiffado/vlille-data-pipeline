@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: stg_station_status
+    description: Disponibilité de chaque station à chaque relevé du flux station_status.
+    columns:
+      - name: station_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_station_information')
+                field: station_id
+      - name: num_bikes_available
+        data_tests:
+          - not_null
+      - name: num_docks_available
+        data_tests:
+          - not_null
+      - name: last_reported_at
+        description: Dernière remontée d'information de la station (peut être antérieure au relevé).
+        data_tests:
+          - not_null
+      - name: feed_updated_at
+        description: Horodatage du relevé (last_updated du flux).
+        data_tests:
+          - not_null
+
+  - name: stg_station_information
+    description: Référentiel des stations à chaque relevé du flux station_information.
+    columns:
+      - name: station_id
+        data_tests:
+          - not_null
+      - name: station_name
+        data_tests:
+          - not_null
+      - name: capacity
+        data_tests:
+          - not_null
+      - name: feed_updated_at
+        data_tests:
+          - not_null
