@@ -1,79 +1,101 @@
 # V'Lille — pipeline de données
 
-Projet personnel d'apprentissage : collecte de la disponibilité des stations V'Lille (open data de la
-Métropole Européenne de Lille), modélisée dans BigQuery avec dbt, orchestrée avec Airflow, puis
-collectée en temps réel avec Kafka.
+Projet personnel d'apprentissage. Il collecte la disponibilité des stations de vélos en libre-service
+V'Lille (open data de la Métropole Européenne de Lille), la stocke dans Google Cloud, la modélise dans
+BigQuery avec dbt, orchestre le tout avec Airflow et ajoute une collecte temps réel avec Kafka.
 
-Avancement : voir [ROADMAP.md](ROADMAP.md).
+Le but est d'apprendre ces outils sur un cas concret, de bout en bout. Ce n'est pas un système de
+production : tout ce qui tourne en continu (Airflow, Kafka) tourne sur un poste personnel, sous Docker.
 
-## Démarrage
-Prérequis : [uv](https://docs.astral.sh/uv/).
+**Questions métier traitées :** quelles stations sont souvent vides ou pleines, et lesquelles demandent
+un rééquilibrage.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    API["API GBFS V'Lille<br/>(Ilévia, open data)"]
+
+    subgraph Batch["Batch — toutes les 30 min, orchestré par Airflow"]
+        COLLECT["vlille-collect<br/>collecte + validation"]
+        LOAD["vlille-load<br/>chargement"]
+        DBT["dbt build<br/>modèles + tests"]
+    end
+
+    subgraph Streaming["Temps réel — Kafka local"]
+        PRODUCE["vlille-produce<br/>chaque minute"]
+        TOPIC[("topic<br/>vlille.station_status")]
+        CONSUME["vlille-consume<br/>par lots"]
+    end
+
+    subgraph GCP["Google Cloud (europe-west1)"]
+        GCS[("Cloud Storage<br/>zone brute")]
+        RAW[("BigQuery<br/>vlille_raw")]
+        DEV[("BigQuery<br/>vlille_dev")]
+    end
+
+    API --> COLLECT --> GCS
+    GCS --> LOAD --> RAW
+    RAW --> DBT --> DEV
+    API --> PRODUCE --> TOPIC --> CONSUME --> GCS
+```
+
+| Couche | Outil | Rôle dans le projet |
+|---|---|---|
+| Source | [GBFS](https://gbfs.org/) V'Lille | Flux JSON public : référentiel des stations et disponibilité, rafraîchi chaque minute |
+| Collecte | Python 3.12 ([httpx](https://www.python-httpx.org/), [pydantic](https://docs.pydantic.dev/)) | Télécharge, archive et valide les flux |
+| Zone brute | [Cloud Storage](https://cloud.google.com/storage/docs) | Réponses conservées telles que reçues, 30 jours |
+| Entrepôt | [BigQuery](https://cloud.google.com/bigquery/docs) | Tables brutes partitionnées, puis tables modélisées |
+| Transformation | [dbt Core](https://docs.getdbt.com/) | SQL versionné et testé : staging, historique SCD2, faits, mart |
+| Orchestration | [Apache Airflow 3](https://airflow.apache.org/docs/) | Enchaîne collecte → chargement → dbt toutes les 30 minutes |
+| Temps réel | [Apache Kafka 4](https://kafka.apache.org/documentation/) | Publie chaque nouvelle remontée de station, écrite par lots dans GCS |
+| Outillage | [uv](https://docs.astral.sh/uv/), [pytest](https://docs.pytest.org/), [ruff](https://docs.astral.sh/ruff/), [Docker](https://docs.docker.com/), GitHub Actions | Environnement reproductible, tests, lint, conteneurs, CI |
+
+## Documentation
+
+| Document | Contenu |
+|---|---|
+| [Guide du projet](docs/guide/README.md) | Les étapes de mise en place, une par chapitre : outils, bibliothèques, fonctionnement, où regarder |
+| [Lancer le projet (RUN)](docs/RUN.md) | Installation, toutes les commandes, redémarrage après un reboot, dépannage |
+| [Décisions techniques (ADR)](docs/decisions/) | Pourquoi chaque choix, alternatives écartées, limites |
+| [Ressources GCP](infra/README.md) | Commandes de création du bucket et des tables |
+| [Feuille de route](ROADMAP.md) | Étapes réalisées |
+
+## Démarrage rapide
+
+Prérequis : uv, Docker Desktop, le CLI Google Cloud et un projet GCP (détails dans [RUN.md](docs/RUN.md)).
+
 ```bash
 uv sync
+cp .env.example .env
+gcloud auth application-default login
 uv run pytest
-```
-
-Collecte (une exécution) : copier `.env.example` en `.env`, s'authentifier avec
-`gcloud auth application-default login`, puis :
-```bash
-uv run --env-file .env vlille-collect
-```
-La commande archive les flux `station_information` et `station_status` dans la zone brute GCS, puis
-les valide ; elle se termine en erreur si un flux est invalide.
-
-Chargement d'un jour dans les tables brutes BigQuery (remplace la partition du jour) :
-```bash
-uv run --env-file .env vlille-load --date 2026-10-06
-```
-Modèles dbt (dans `dbt/`, dataset `vlille_dev`) :
-- `stg_station_status`, `stg_station_information` : JSON brut déplié, une ligne par station et par relevé ;
-- `snap_station` : historique SCD type 2 du référentiel des stations ;
-- `fct_station_status` : une ligne par remontée de station, table incrémentale ;
-- `dim_station` : versions des stations avec leur période de validité ;
-- `mart_station_daily` : par station et par jour, part du temps vide ou pleine (approximée par la part
-  des remontées) et besoin de rééquilibrage.
-
-Construction des modèles, du snapshot et tests de données :
-```bash
-uv run --env-file .env dbt build --project-dir dbt --profiles-dir dbt
-```
-
-## Orchestration (Airflow)
-Airflow tourne en local sous Docker Compose (Docker Desktop requis). Le DAG `vlille_pipeline` enchaîne
-toutes les 30 minutes la collecte, le chargement (hier et aujourd'hui) et `dbt build`.
-```bash
 docker compose -f airflow/docker-compose.yml up -d --build
 ```
-Interface : http://localhost:8081 (usage local, sans authentification). Arrêt :
-`docker compose -f airflow/docker-compose.yml down`.
 
-## Temps réel (Kafka)
-Kafka tourne en local sous Docker Compose (un broker en mode KRaft, topic `vlille.station_status`).
-Le producteur publie chaque minute les nouvelles remontées des stations (clé `station_id`) :
-```bash
-docker compose -f kafka/docker-compose.yml up -d
-uv run --env-file .env vlille-produce
+Interfaces locales :
+
+| Interface | Adresse |
+|---|---|
+| Airflow | http://localhost:8081 |
+| Documentation dbt (après `dbt docs serve`) | http://localhost:8080 |
+
+## Structure du dépôt
+
 ```
-Le consommateur écrit les messages par lots dans la zone brute GCS
-(`kafka/station_status/dt=AAAA-MM-JJ/`), et ne valide ses offsets qu'après l'écriture (au moins une
-fois) :
-```bash
-uv run --env-file .env vlille-consume
+src/vlille/          code Python (collecte, chargement, producteur et consommateur Kafka)
+tests/               tests pytest, sans réseau (GCS, BigQuery et Kafka simulés)
+dbt/                 projet dbt : modèles, snapshot, tests de données
+airflow/             image, docker-compose et DAG Airflow
+kafka/               docker-compose de Kafka
+infra/               définitions des ressources GCP (bucket, tables)
+docs/                guide, procédure de lancement, décisions (ADR)
 ```
-Ces fichiers ne sont pas chargés dans BigQuery : les modèles dbt s'appuient sur la collecte batch.
 
-Ressources GCP utilisées : voir [`infra/`](infra/README.md).
+## Limites connues
 
-## Décisions techniques
-Chaque choix est justifié dans un ADR court ([`docs/decisions/`](docs/decisions/)) :
-- [0001 — Source de données : flux GBFS V'Lille](docs/decisions/0001-source-gbfs-vlille.md)
-- [0002 — Outillage Python : uv, layout `src/`, pytest, ruff](docs/decisions/0002-outillage-python.md)
-- [0003 — GCP : région, authentification et maîtrise des coûts](docs/decisions/0003-gcp-region-auth-couts.md)
-- [0004 — Zone brute dans Cloud Storage](docs/decisions/0004-zone-brute-gcs.md)
-- [0005 — Tables brutes BigQuery](docs/decisions/0005-tables-brutes-bigquery.md)
-- [0006 — dbt Core : projet, connexion et couche staging](docs/decisions/0006-dbt-staging.md)
-- [0007 — Snapshot SCD2 des stations et faits incrémentaux](docs/decisions/0007-snapshot-et-faits-incrementaux.md)
-- [0008 — Mart de saturation quotidienne des stations](docs/decisions/0008-mart-saturation-quotidienne.md)
-- [0009 — Orchestration avec Airflow en local](docs/decisions/0009-orchestration-airflow.md)
-- [0010 — Kafka local et producteur des remontées de stations](docs/decisions/0010-kafka-producteur.md)
-- [0011 — Consommateur Kafka vers la zone brute GCS](docs/decisions/0011-kafka-consommateur.md)
+- Airflow et Kafka tournent seulement quand le poste est allumé avec Docker Desktop lancé : les
+  données ont des trous.
+- Kafka n'a qu'un broker, donc aucune réplication.
+- Les indicateurs du mart sont calculés sur le nombre de remontées, approximation de la durée.
+- Les fichiers écrits par le consommateur Kafka ne sont pas chargés dans BigQuery.

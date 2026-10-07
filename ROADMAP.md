@@ -24,4 +24,5 @@ Projet personnel d'apprentissage. Une case cochée = étape réalisée et vérif
 - [x] 3.2 Consommateur vers GCS
 
 ## Finalisation
-- [ ] README avec schéma d'architecture, dépôt public
+- [x] Documentation : README avec schéma d'architecture, guide par étape, procédure de lancement
+- [ ] Dépôt public
