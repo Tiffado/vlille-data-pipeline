@@ -44,7 +44,7 @@ toutes les 30 minutes la collecte, le chargement (hier et aujourd'hui) et `dbt b
 ```bash
 docker compose -f airflow/docker-compose.yml up -d --build
 ```
-Interface : http://localhost:8080 (usage local, sans authentification). Arrêt :
+Interface : http://localhost:8081 (usage local, sans authentification). Arrêt :
 `docker compose -f airflow/docker-compose.yml down`.
 
 Ressources GCP utilisées : voir [`infra/`](infra/README.md).

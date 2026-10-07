@@ -54,7 +54,8 @@ services:
     <<: *airflow-common
     command: api-server
     ports:
-      - "8080:8080"
+      # Port 8081 sur le poste : 8080 reste libre pour `dbt docs serve` (port par défaut).
+      - "8081:8080"
     restart: always
     depends_on:
       <<: *airflow-common-depends-on
