@@ -47,6 +47,14 @@ docker compose -f airflow/docker-compose.yml up -d --build
 Interface : http://localhost:8081 (usage local, sans authentification). Arrêt :
 `docker compose -f airflow/docker-compose.yml down`.
 
+## Temps réel (Kafka)
+Kafka tourne en local sous Docker Compose (un broker en mode KRaft, topic `vlille.station_status`).
+Le producteur publie chaque minute les nouvelles remontées des stations (clé `station_id`) :
+```bash
+docker compose -f kafka/docker-compose.yml up -d
+uv run --env-file .env vlille-produce
+```
+
 Ressources GCP utilisées : voir [`infra/`](infra/README.md).
 
 ## Décisions techniques
@@ -60,3 +68,4 @@ Chaque choix est justifié dans un ADR court ([`docs/decisions/`](docs/decisions
 - [0007 — Snapshot SCD2 des stations et faits incrémentaux](docs/decisions/0007-snapshot-et-faits-incrementaux.md)
 - [0008 — Mart de saturation quotidienne des stations](docs/decisions/0008-mart-saturation-quotidienne.md)
 - [0009 — Orchestration avec Airflow en local](docs/decisions/0009-orchestration-airflow.md)
+- [0010 — Kafka local et producteur des remontées de stations](docs/decisions/0010-kafka-producteur.md)

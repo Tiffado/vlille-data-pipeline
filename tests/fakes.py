@@ -44,3 +44,18 @@ class FakeBigQuery:
     def load_table_from_json(self, rows, table, job_config):
         self.loads.append((table, rows, job_config))
         return FakeLoadJob()
+
+
+class FakeProducer:
+    """Producteur Kafka qui garde les messages en mémoire."""
+
+    def __init__(self) -> None:
+        self.messages: list[tuple[str, str, bytes]] = []
+        self.flushed = False
+
+    def produce(self, topic: str, key: str, value: bytes) -> None:
+        self.messages.append((topic, key, value))
+
+    def flush(self, timeout: float) -> int:
+        self.flushed = True
+        return 0

@@ -20,7 +20,7 @@ Projet personnel d'apprentissage. Une case cochée = étape réalisée et vérif
 - [x] 2.1 Airflow sous Docker Compose : DAG collecte → chargement → `dbt build`
 
 ## Phase 3 — Temps réel
-- [ ] 3.1 Kafka local et producteur
+- [x] 3.1 Kafka local et producteur
 - [ ] 3.2 Consommateur vers GCS
 
 ## Finalisation

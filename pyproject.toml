@@ -5,6 +5,7 @@ description = "Pipeline de données sur la disponibilité des stations V'Lille (
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "confluent-kafka>=2.16.0",
     "dbt-bigquery>=1.12.1",
     "google-cloud-bigquery>=3.46.1",
     "google-cloud-storage>=2.18",
@@ -15,6 +16,7 @@ dependencies = [
 [project.scripts]
 vlille-collect = "vlille.collect:main"
 vlille-load = "vlille.load:main"
+vlille-produce = "vlille.produce:main"
 
 [dependency-groups]
 dev = [
