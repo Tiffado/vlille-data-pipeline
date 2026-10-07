@@ -26,6 +26,8 @@ flowchart LR
     SS --> FCT[fct_station_status<br/>incrémentale]
     FCT --> MART[mart_station_daily]
     DIM --> MART
+    FCT --> CUR[mart_station_current]
+    DIM --> CUR
 ```
 
 | Modèle | Matérialisation | Contenu |
@@ -37,6 +39,7 @@ flowchart LR
 | `fct_station_status` | table incrémentale | Une ligne par remontée réelle `(station_id, last_reported_at)` |
 | `dim_station` | table | Versions des stations avec période de validité |
 | `mart_station_daily` | table | Par station et par jour : part vide, part pleine, besoin de rééquilibrage |
+| `mart_station_current` | table | Par station : état à la dernière remontée chargée (vélos, places, heure) |
 
 ## Staging : typer le JSON
 
@@ -96,7 +99,7 @@ Limite : la part des remontées approxime la part du temps, les remontées étan
 Déclarés en YAML (`not_null`, `unique`, `relationships`, `accepted_values`) ou écrits en SQL dans
 [`dbt/tests/`](../../dbt/tests/) (une requête qui doit renvoyer zéro ligne) : unicité par relevé, par
 remontée, par station et jour, parts comprises entre 0 et 1. `dbt build` construit et teste dans
-l'ordre du graphe : 32 tests.
+l'ordre du graphe : 31 tests de données.
 
 ## Lancer et voir
 

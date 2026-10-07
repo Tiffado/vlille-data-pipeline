@@ -10,8 +10,10 @@ gratuite, accessible par un simple lien et la plus simple possible.
 ## Décision
 - Tableau de bord **Data Studio** (ex-Looker Studio, outil gratuit de Google), connecté directement à
   BigQuery sur la table `vlille_dev.mart_station_daily`.
-- Un seul écran : carte des stations colorée selon la part du temps vide, tableau des stations triées
-  par part du temps vide, sélecteur de période.
+- Page « Saturation par jour » : carte des stations colorée selon la part du temps vide, tableau des
+  stations triées par part du temps vide, sélecteur de période.
+- Page « État actuel », sur la table `vlille_dev.mart_station_current` (une ligne par station) : carte
+  des vélos disponibles à la dernière remontée chargée, heure de la remontée dans l'info-bulle.
 - Partage public en lecture par lien ; la source utilise les identifiants du propriétaire : les
   visiteurs n'ont pas besoin de compte GCP.
 - Le mart porte tout ce dont le tableau de bord a besoin : position (`location`, format

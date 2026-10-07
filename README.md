@@ -10,8 +10,13 @@ production : tout ce qui tourne en continu (Airflow, Kafka) tourne sur un poste 
 **Questions métier traitées :** quelles stations sont souvent vides ou pleines, et lesquelles demandent
 un rééquilibrage.
 
-**[Voir le tableau de bord](https://datastudio.google.com/reporting/94e9208b-e444-4b38-a2eb-7d2ecd21763e)** (Data Studio, public, sans compte) : carte des stations et
-classement par part du temps vide.
+**[Voir le tableau de bord](https://datastudio.google.com/reporting/94e9208b-e444-4b38-a2eb-7d2ecd21763e)** (Data Studio, public, sans compte) : saturation des stations par
+jour (carte et classement) et état actuel (vélos disponibles à la dernière remontée chargée).
+
+> **Données par intermittence.** La collecte, Kafka et Airflow tournent sur un poste personnel, sous
+> Docker, uniquement quand il est allumé. Il est donc normal que le tableau de bord ne soit pas à jour :
+> il affiche les dernières données collectées, et l'historique comporte des trous. Quand le pipeline
+> tourne, les données ont jusqu'à 3 h 30 de retard (lots de 30 minutes, chargement toutes les 3 heures).
 
 ## Architecture
 
@@ -66,7 +71,7 @@ Tout démarre avec Docker Desktop, sans action manuelle.
 |---|---|
 | `collect` (`vlille-collect`) | archive le référentiel des stations dans la zone brute GCS (`gbfs/`) |
 | `load` (`vlille-load`) | charge hier et aujourd'hui dans BigQuery : `raw_station_information`, `raw_station_status_stream` |
-| `dbt_build` | reconstruit les modèles de `vlille_dev` (staging, historique SCD2, faits, mart) et lance les 32 tests |
+| `dbt_build` | reconstruit les modèles de `vlille_dev` (staging, historique SCD2, faits, marts) et lance les 31 tests de données |
 
 Côté Google, sans dépendre du poste : suppression des fichiers de la zone brute après 30 jours.
 
