@@ -14,11 +14,16 @@ BASE = "https://media.ilevia.fr/opendata/"
 
 
 def make_gbfs(feeds: dict[str, dict], gbfs: dict) -> GbfsClient:
-    routes = {GBFS_URL: gbfs} | {f"{BASE}{name}.json": body for name, body in feeds.items()}
+    """Faux serveur : gbfs.json et chaque flux à son URL, 404 pour le reste."""
+    routes = {GBFS_URL: gbfs}
+    for name, body in feeds.items():
+        routes[BASE + name + ".json"] = body
 
     def handler(request: httpx.Request) -> httpx.Response:
-        body = routes.get(str(request.url))
-        return httpx.Response(200, json=body) if body else httpx.Response(404)
+        url = str(request.url)
+        if url not in routes:
+            return httpx.Response(404)
+        return httpx.Response(200, json=routes[url])
 
     return GbfsClient(GBFS_URL, httpx.Client(transport=httpx.MockTransport(handler)))
 
@@ -47,6 +52,7 @@ def test_invalid_feed_is_archived_but_reported(feeds, load_fixture):
 
     assert collect(make_gbfs(feeds, load_fixture("gbfs")), RawStore(bucket)) is False
 
-    status = next(data for name, data in bucket.objects.items() if "station_status" in name)
-    archived = json.loads(gzip.decompress(status))
+    status_files = [name for name in bucket.objects if "station_status" in name]
+    assert len(status_files) == 1
+    archived = json.loads(gzip.decompress(bucket.objects[status_files[0]]))
     assert archived["data"]["stations"][0]["num_bikes_available"] == -1

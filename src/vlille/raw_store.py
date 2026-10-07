@@ -23,8 +23,10 @@ def object_name(feed: str, last_updated: datetime) -> str:
 
     Ex. gbfs/station_status/dt=2026-10-06/station_status_20261006T151202Z.json.gz
     """
-    ts = last_updated.astimezone(UTC)
-    return f"{PREFIX}/{feed}/dt={ts:%Y-%m-%d}/{feed}_{ts:%Y%m%dT%H%M%SZ}.json.gz"
+    utc = last_updated.astimezone(UTC)
+    day = utc.strftime("%Y-%m-%d")
+    timestamp = utc.strftime("%Y%m%dT%H%M%SZ")
+    return f"{PREFIX}/{feed}/dt={day}/{feed}_{timestamp}.json.gz"
 
 
 def read_last_updated(payload: bytes) -> datetime:

@@ -32,7 +32,7 @@ log = logging.getLogger("vlille.load")
 def read_day(bucket: storage.Bucket, feed: str, day: date) -> list[dict]:
     """Lit les fichiers d'un flux pour un jour et les convertit en lignes de la table brute."""
     rows = []
-    for blob in bucket.list_blobs(prefix=f"{PREFIX}/{feed}/dt={day:%Y-%m-%d}/"):
+    for blob in bucket.list_blobs(prefix=f"{PREFIX}/{feed}/dt={day.isoformat()}/"):
         payload = gzip.decompress(blob.download_as_bytes())
         rows.append(
             {
@@ -59,7 +59,7 @@ def load_day(
             loaded[feed] = 0
             continue
         # Le suffixe $AAAAMMJJ cible une seule partition ; WRITE_TRUNCATE la remplace.
-        table = f"{dataset}.raw_{feed}${day:%Y%m%d}"
+        table = f"{dataset}.raw_{feed}${day.strftime('%Y%m%d')}"
         job_config = bigquery.LoadJobConfig(
             source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
             schema=RAW_SCHEMA,

@@ -38,7 +38,8 @@ def new_reports(feed: StationStatusFeed, last_seen: dict[str, datetime]) -> list
 
 def to_message(station: StationStatus, feed_updated_at: datetime) -> bytes:
     """Message JSON : l'état de la station et l'horodatage du relevé qui l'a fourni."""
-    message = station.model_dump(mode="json") | {"feed_updated_at": feed_updated_at.isoformat()}
+    message = station.model_dump(mode="json")
+    message["feed_updated_at"] = feed_updated_at.isoformat()
     return json.dumps(message).encode()
 
 

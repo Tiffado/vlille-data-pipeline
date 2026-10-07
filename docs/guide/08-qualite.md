@@ -2,7 +2,7 @@
 
 ## Tests Python
 
-[pytest](https://docs.pytest.org/), dans [`tests/`](../../tests/) : 35 tests, **sans réseau ni GCP**.
+[pytest](https://docs.pytest.org/), dans [`tests/`](../../tests/) : 34 tests, **sans réseau ni GCP**.
 
 Chaque composant reçoit ses dépendances de l'extérieur (client HTTP, bucket, client BigQuery, producteur
 ou consommateur Kafka) : en test, on lui passe une doublure en mémoire

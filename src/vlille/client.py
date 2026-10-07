@@ -29,8 +29,12 @@ class GbfsClient:
         languages = self._get_json(self._gbfs_url).get("data", {})
         if not languages:
             raise GbfsError(f"Aucune langue déclarée dans {self._gbfs_url}")
-        feeds = next(iter(languages.values()))["feeds"]
-        return {feed["name"]: feed["url"] for feed in feeds}
+        # Les flux sont les mêmes dans chaque langue : on prend la première déclarée.
+        first_language = list(languages)[0]
+        urls = {}
+        for feed in languages[first_language]["feeds"]:
+            urls[feed["name"]] = feed["url"]
+        return urls
 
     def station_information(self) -> StationInformationFeed:
         """Télécharge et valide le flux `station_information`.
@@ -53,7 +57,7 @@ class GbfsClient:
         """
         urls = self.feed_urls()
         if name not in urls:
-            raise GbfsError(f"Flux {name!r} absent de {self._gbfs_url}")
+            raise GbfsError(f"Flux '{name}' absent de {self._gbfs_url}")
         return self._get(urls[name]).content
 
     def _get_json(self, url: str) -> dict:
