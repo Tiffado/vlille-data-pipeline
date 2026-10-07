@@ -1,0 +1,24 @@
+version: 2
+
+models:
+  - name: fct_station_status
+    description: >
+      Disponibilité des stations, une ligne par remontée réelle (station_id, last_reported_at).
+      Table incrémentale fusionnée sur cette clé, partitionnée par jour.
+    columns:
+      - name: station_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('int_station_current')
+                field: station_id
+      - name: last_reported_at
+        data_tests:
+          - not_null
+      - name: num_bikes_available
+        data_tests:
+          - not_null
+      - name: num_docks_available
+        data_tests:
+          - not_null

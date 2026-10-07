@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: int_station_current
+    description: État le plus récent de chaque station ; source du snapshot SCD2.
+    columns:
+      - name: station_id
+        data_tests:
+          - unique
+          - not_null

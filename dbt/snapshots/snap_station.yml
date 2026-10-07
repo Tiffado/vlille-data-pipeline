@@ -1,0 +1,10 @@
+snapshots:
+  - name: snap_station
+    description: >
+      Historique SCD type 2 du référentiel des stations. Une nouvelle version est créée quand le nom,
+      la capacité ou la position change ; dbt_valid_to est vide pour la version courante.
+    relation: ref('int_station_current')
+    config:
+      unique_key: station_id
+      strategy: check
+      check_cols: [station_name, capacity, latitude, longitude]

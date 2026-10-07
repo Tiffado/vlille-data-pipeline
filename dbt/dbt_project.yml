@@ -7,6 +7,7 @@ flags:
 
 model-paths: ["models"]
 test-paths: ["tests"]
+snapshot-paths: ["snapshots"]
 
 vars:
   # Les tables brutes exigent un filtre de partition : le staging lit à partir de cette date.
@@ -16,3 +17,7 @@ models:
   vlille:
     staging:
       +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table
