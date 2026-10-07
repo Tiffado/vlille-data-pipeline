@@ -30,8 +30,8 @@ docker compose -f airflow/docker-compose.yml ps
 docker compose -f kafka/docker-compose.yml ps
 ```
 
-Attendu : `postgres`, `airflow-apiserver`, `airflow-scheduler`, `airflow-dag-processor` et `kafka` en
-`running` (`airflow-init` et `kafka-init` sont normalement arrêtés). Sinon :
+Attendu : `postgres`, `airflow-apiserver`, `airflow-scheduler`, `airflow-dag-processor`, `kafka`,
+`producer` et `consumer` en `running` (`airflow-init` et `kafka-init` sont normalement arrêtés). Sinon :
 
 ```bash
 docker compose -f airflow/docker-compose.yml up -d
@@ -50,24 +50,25 @@ Un long jeton s'affiche : tout va bien. En cas d'erreur (`invalid_grant`, `reaut
 gcloud auth application-default login
 ```
 
-Puis redémarrer Airflow pour qu'il relise le fichier : `docker compose -f airflow/docker-compose.yml restart`.
+Puis redémarrer Airflow et le consommateur Kafka pour qu'ils relisent le fichier :
+`docker compose -f airflow/docker-compose.yml restart` et
+`docker compose -f kafka/docker-compose.yml restart consumer`.
 
 ### 4. Contrôler Airflow
 
 Ouvrir <http://localhost:8081>, DAG **vlille_pipeline** : il doit être actif (interrupteur allumé) et un
 run doit apparaître dans les 30 minutes. **Trigger** lance un run immédiatement.
 
-### 5. (Optionnel) Relancer le temps réel
+### 5. Contrôler le temps réel
 
-Le producteur et le consommateur Kafka ne redémarrent pas seuls. Dans deux terminaux :
-
-```bash
-uv run --env-file .env vlille-produce
-```
+Le producteur et le consommateur tournent dans des conteneurs et repartent seuls avec Docker. Leur
+activité :
 
 ```bash
-uv run --env-file .env vlille-consume
+docker compose -f kafka/docker-compose.yml logs --tail 5 producer consumer
 ```
+
+Le producteur écrit une ligne par minute, le consommateur une ligne par lot (toutes les 5 minutes).
 
 ## Première installation
 
@@ -121,11 +122,11 @@ uv run --env-file .env vlille-consume
    uv run --env-file .env dbt debug --project-dir dbt --profiles-dir dbt
    ```
 
-5. **Démarrer Airflow et Kafka** :
+5. **Démarrer Airflow et Kafka** (avec le producteur et le consommateur) :
 
    ```bash
    docker compose -f airflow/docker-compose.yml up -d --build
-   docker compose -f kafka/docker-compose.yml up -d
+   docker compose -f kafka/docker-compose.yml up -d --build
    ```
 
    Dans <http://localhost:8081>, activer le DAG `vlille_pipeline` (il est en pause à sa création).
@@ -145,9 +146,9 @@ uv run --env-file .env vlille-consume
 | Servir la documentation dbt (<http://localhost:8080>) | `uv run --env-file .env dbt docs serve --project-dir dbt --profiles-dir dbt` |
 | Démarrer Airflow (et reconstruire l'image après une modification du code ou de dbt) | `docker compose -f airflow/docker-compose.yml up -d --build` |
 | Interface Airflow | <http://localhost:8081> |
-| Démarrer Kafka | `docker compose -f kafka/docker-compose.yml up -d` |
-| Producteur Kafka | `uv run --env-file .env vlille-produce` |
-| Consommateur Kafka | `uv run --env-file .env vlille-consume` |
+| Démarrer Kafka, le producteur et le consommateur (et reconstruire leur image après une modification du code) | `docker compose -f kafka/docker-compose.yml up -d --build` |
+| Journaux du producteur et du consommateur | `docker compose -f kafka/docker-compose.yml logs -f producer consumer` |
+| Producteur ou consommateur à la main, hors Docker (pour déboguer ; arrêter d'abord le conteneur correspondant) | `uv run --env-file .env vlille-produce` / `vlille-consume` |
 | Retard du consommateur | `docker compose -f kafka/docker-compose.yml exec kafka /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group vlille-gcs-writer` |
 | Lire quelques messages du topic | `docker compose -f kafka/docker-compose.yml exec kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic vlille.station_status --from-beginning --max-messages 5` |
 | État des conteneurs | `docker compose -f airflow/docker-compose.yml ps` (idem avec `kafka/`) |
@@ -159,7 +160,8 @@ Consoles GCP : [Cloud Storage](https://console.cloud.google.com/storage/browser/
 
 ## Arrêter
 
-- Producteur, consommateur, documentation dbt : `Ctrl+C` dans leur terminal.
+- Documentation dbt, ou commande lancée à la main : `Ctrl+C` dans son terminal.
+- Producteur et consommateur seuls : `docker compose -f kafka/docker-compose.yml stop producer consumer`.
 - Airflow et Kafka (les données sont conservées dans des volumes Docker) :
 
   ```bash
@@ -182,4 +184,4 @@ Consoles GCP : [Cloud Storage](https://console.cloud.google.com/storage/browser/
 | `Cannot query over table ... without a filter over column(s) 'last_updated'` | Filtre de partition obligatoire | Ajouter `WHERE DATE(last_updated) = ...` à la requête |
 | Producteur : `Connection refused` sur `localhost:9092` | Kafka arrêté | `docker compose -f kafka/docker-compose.yml up -d` |
 | `uv sync` : fichier `.exe` « utilisé par un autre processus » | Une commande du projet tourne encore | Arrêter le producteur ou le consommateur (`Ctrl+C`), relancer `uv sync` |
-| Modification du code sans effet dans Airflow | Image non reconstruite | `docker compose -f airflow/docker-compose.yml up -d --build` |
+| Modification du code sans effet dans Airflow, le producteur ou le consommateur | Image non reconstruite | `docker compose -f airflow/docker-compose.yml up -d --build` (idem avec `kafka/`) |
