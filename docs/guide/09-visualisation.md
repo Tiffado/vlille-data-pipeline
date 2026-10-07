@@ -7,12 +7,12 @@
 
 Deux pages :
 
-- **Saturation par jour** (table `mart_station_daily`) :
+- **Besoin de rééquilibrage** (table `mart_station_daily`) :
   - carte des stations, colorée selon la part du temps où elles sont vides ;
   - tableau des stations, triées de la plus souvent vide à la moins souvent vide, avec la part du
     temps pleine ;
   - sélecteur de période, qui filtre la carte et le tableau.
-- **État actuel** (table `mart_station_current`) : carte des stations, taille et couleur des bulles
+- **Etat actuel** (table `mart_station_current`) : carte des stations, taille et couleur des bulles
   selon le nombre de vélos disponibles à la dernière remontée ; l'info-bulle donne le nom de la station
   et l'heure de cette remontée.
 

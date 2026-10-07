@@ -95,15 +95,15 @@ Accès uniforme, accès public bloqué, suppression après 30 jours.
 | `snap_station` | snapshot | historique SCD type 2 du référentiel |
 | `dim_station` | table | versions des stations avec période de validité |
 | `fct_station_status` | table incrémentale (`merge`) | une ligne par remontée `(station_id, last_reported_at)`, partition par jour |
-| `mart_station_daily` | table | par station et par jour : part vide, part pleine, besoin de rééquilibrage, position ; page « Saturation par jour » du tableau de bord |
-| `mart_station_current` | table | une ligne par station : état à la dernière remontée chargée (vélos, places, heure, position) ; page « État actuel » du tableau de bord |
+| `mart_station_daily` | table | par station et par jour : part vide, part pleine, besoin de rééquilibrage, position ; page « Besoin de rééquilibrage » du tableau de bord |
+| `mart_station_current` | table | une ligne par station : état à la dernière remontée chargée (vélos, places, heure, position) ; page « Etat actuel » du tableau de bord |
 
 ## Visualisation
 
 Tableau de bord **Data Studio** (ex-Looker Studio) : <https://datastudio.google.com/reporting/94e9208b-e444-4b38-a2eb-7d2ecd21763e>
 
-- sources : `vlille_dev.mart_station_daily` (page « Saturation par jour ») et
-  `vlille_dev.mart_station_current` (page « État actuel »), connecteur BigQuery natif ;
+- sources : `vlille_dev.mart_station_daily` (page « Besoin de rééquilibrage ») et
+  `vlille_dev.mart_station_current` (page « Etat actuel »), connecteur BigQuery natif ;
 - partage public en lecture, identifiants du propriétaire (pas de compte GCP pour les visiteurs) ;
 - données rafraîchies au rythme de BigQuery (toutes les 3 heures).
 
