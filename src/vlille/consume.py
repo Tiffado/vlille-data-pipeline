@@ -57,9 +57,12 @@ def flush(consumer: Consumer, bucket: storage.Bucket, batch: list[Message]) -> N
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--batch-size", type=int, default=500, help="Messages par lot.")
+    # Lots de 30 minutes : environ 3 fichiers par demi-heure (un par partition) au lieu d'une
+    # multitude de petits fichiers ; BigQuery n'étant rafraîchi que toutes les 3 heures, ce délai
+    # ne retarde pas l'analyse.
+    parser.add_argument("--batch-size", type=int, default=10_000, help="Messages par lot.")
     parser.add_argument(
-        "--batch-seconds", type=int, default=300, help="Durée maximale d'un lot, en secondes."
+        "--batch-seconds", type=int, default=1800, help="Durée maximale d'un lot, en secondes."
     )
     args = parser.parse_args()
 
