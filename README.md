@@ -75,17 +75,18 @@ Tout démarre avec Docker Desktop, sans action manuelle.
 
 Côté Google, sans dépendre du poste : suppression des fichiers de la zone brute après 30 jours.
 
-| Couche | Outil | Rôle dans le projet |
-|---|---|---|
-| Source | [GBFS](https://gbfs.org/) V'Lille | Flux JSON public : référentiel des stations et disponibilité, rafraîchi chaque minute |
-| Collecte | Python 3.12 ([httpx](https://www.python-httpx.org/), [pydantic](https://docs.pydantic.dev/)) | Lit l'API, valide les données, archive le référentiel |
-| Zone brute | [Cloud Storage](https://cloud.google.com/storage/docs) | Réponses conservées telles que reçues, 30 jours |
-| Entrepôt | [BigQuery](https://cloud.google.com/bigquery/docs) | Tables brutes partitionnées, puis tables modélisées |
-| Transformation | [dbt Core](https://docs.getdbt.com/) | SQL versionné et testé : staging, historique SCD2, faits, mart |
-| Visualisation | [Data Studio](https://datastudio.google.com/) | Tableau de bord public sur le mart : carte et classement des stations |
-| Orchestration | [Apache Airflow 3](https://airflow.apache.org/docs/) | Enchaîne collecte du référentiel → chargement → dbt toutes les 3 heures |
-| Temps réel | [Apache Kafka 4](https://kafka.apache.org/documentation/) | Seule voie d'entrée des disponibilités : chaque nouvelle remontée de station jusqu'à la zone brute |
-| Outillage | [uv](https://docs.astral.sh/uv/), [pytest](https://docs.pytest.org/), [ruff](https://docs.astral.sh/ruff/), [Docker](https://docs.docker.com/), GitHub Actions | Environnement reproductible, tests, lint, conteneurs, CI |
+## Technologies
+
+| Technologie | Rôle dans le projet |
+|---|---|
+| GCP — Cloud Storage | Zone brute : réponses de l'API et messages Kafka conservés tels que reçus, 30 jours |
+| GCP — BigQuery | Entrepôt : tables brutes partitionnées, puis tables modélisées |
+| dbt | Transformations SQL versionnées et testées : staging, historique SCD2, faits, marts |
+| Airflow | Orchestration du batch : référentiel, chargement, dbt, toutes les 3 heures |
+| Kafka | Ingestion en continu des disponibilités des stations |
+| Data Studio | Tableau de bord public sur les marts |
+
+La collecte et le chargement sont écrits en Python.
 
 ## Documentation
 
@@ -99,20 +100,11 @@ Côté Google, sans dépendre du poste : suppression des fichiers de la zone bru
 | [Ressources GCP](infra/README.md) | Commandes de création du bucket et des tables |
 | [Feuille de route](ROADMAP.md) | Étapes réalisées |
 
-## Démarrage rapide
+## Lancer le projet
 
-Prérequis : uv, Docker Desktop, le CLI Google Cloud et un projet GCP (détails dans [RUN.md](docs/RUN.md)).
+Installation, commandes et redémarrage : voir [RUN.md](docs/RUN.md).
 
-```bash
-uv sync
-cp .env.example .env
-gcloud auth application-default login
-uv run pytest
-docker compose -f airflow/docker-compose.yml up -d --build
-docker compose -f kafka/docker-compose.yml up -d --build
-```
-
-Interfaces locales (tous les liens : [docs/liens.md](docs/liens.md)) :
+Interfaces (tous les liens : [docs/liens.md](docs/liens.md)) :
 
 | Interface | Adresse |
 |---|---|
@@ -124,7 +116,7 @@ Interfaces locales (tous les liens : [docs/liens.md](docs/liens.md)) :
 
 ```
 src/vlille/          code Python (collecte, chargement, producteur et consommateur Kafka)
-tests/               tests pytest, sans réseau (GCS, BigQuery et Kafka simulés)
+tests/               tests automatisés, sans réseau (GCS, BigQuery et Kafka simulés)
 dbt/                 projet dbt : modèles, snapshot, tests de données
 airflow/             image, docker-compose et DAG Airflow
 kafka/               docker-compose de Kafka, du producteur et du consommateur, image du projet
