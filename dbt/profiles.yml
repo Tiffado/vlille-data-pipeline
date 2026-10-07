@@ -1,5 +1,4 @@
-# Connexion à BigQuery. Aucun secret : l'authentification passe par les Application Default
-# Credentials (gcloud auth application-default login).
+# BigQuery connection through Application Default Credentials: no secret in this file.
 vlille:
   target: dev
   outputs:

@@ -1,4 +1,4 @@
-# Secrets et configuration locale
+# Secrets and local configuration
 .env
 *.key.json
 service-account*.json
@@ -21,16 +21,11 @@ dbt/dbt_packages/
 dbt/logs/
 dbt/.user.yml
 
-# Terraform
-.terraform/
-*.tfstate
-*.tfstate.*
-
-# Éditeurs et système
+# Editors and OS
 .idea/
 .vscode/
 *.log
 Thumbs.db
 
-# Journaux d'exécution locaux
+# Local logs
 logs/

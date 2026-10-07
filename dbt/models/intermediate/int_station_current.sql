@@ -1,4 +1,4 @@
--- État actuel du référentiel : une ligne par station, issue du relevé le plus récent.
+-- Latest known state of each station (one row per station).
 
 select
     station_id,

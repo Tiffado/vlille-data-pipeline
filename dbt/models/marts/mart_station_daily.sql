@@ -1,6 +1,5 @@
--- Saturation quotidienne de chaque station (jour à l'heure de Paris).
--- Les parts sont calculées sur le nombre de remontées, approximation de la part du temps.
--- Table lue par le tableau de bord Looker Studio : elle porte aussi la position des stations.
+-- Daily saturation of each station (Paris time), read by the dashboard.
+-- Shares are computed on the number of reports, an approximation of the share of time.
 
 with reports as (
     select
@@ -13,14 +12,13 @@ with reports as (
         station.latitude,
         station.longitude
     from {{ ref('fct_station_status') }} as status
-    -- Version de la station valable au moment de la remontée (jointure SCD2).
+    -- Station version valid at report time (SCD2 range join).
     inner join {{ ref('dim_station') }} as station
         on status.station_id = station.station_id
         and status.last_reported_at >= station.valid_from
         and status.last_reported_at < station.valid_to
     where status.is_installed
-        -- Une station hors service peut publier une très ancienne remontée : on ne garde que la
-        -- période de collecte.
+        -- Out-of-service stations can publish very old reports.
         and date(status.last_reported_at) >= '{{ var("start_date") }}'
 ),
 
@@ -42,7 +40,7 @@ daily as (
 
 select
     *,
-    -- Position au format « latitude,longitude », reconnu comme champ géographique par Looker Studio.
+    -- "lat,lon" text, recognised as a geo field by Data Studio.
     concat(cast(latitude as string), ',', cast(longitude as string)) as location,
     case
         when share_empty >= {{ var('rebalancing_threshold') }} then 'apporter des vélos'

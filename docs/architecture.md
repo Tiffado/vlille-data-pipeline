@@ -1,8 +1,7 @@
 # Architecture technique
 
-Référence de ce qui compose le pipeline, ce qui tourne, quand, et où vont les données. Les choix
-sont justifiés dans les [ADR](decisions/), le fonctionnement de chaque outil est expliqué dans le
-[guide](guide/README.md).
+Ce qui compose le pipeline, ce qui tourne, quand, et où vont les données. Les choix sont justifiés
+dans les [ADR](decisions/).
 
 ## Vue d'ensemble
 

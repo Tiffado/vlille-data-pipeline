@@ -1,6 +1,5 @@
-# Kafka local : un seul broker en mode KRaft (sans ZooKeeper), donc sans réplication, plus le
-# producteur et le consommateur du projet, qui redémarrent avec Docker.
-# Lancement depuis la racine du dépôt : docker compose -f kafka/docker-compose.yml up -d --build
+# Single-node Kafka in KRaft mode (no ZooKeeper, no replication), plus the project's producer and
+# consumer. From the repository root: docker compose -f kafka/docker-compose.yml up -d --build
 
 services:
   kafka:
@@ -9,22 +8,18 @@ services:
       - "9092:9092"
     environment:
       KAFKA_NODE_ID: 1
-      # Ce nœud est à la fois broker (stocke les messages) et contrôleur (gère les métadonnées).
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      # Deux points d'entrée : INTERNAL pour les autres conteneurs (kafka:19092), EXTERNAL pour
-      # le poste (localhost:9092). Chacun annonce l'adresse joignable depuis son côté.
+      # INTERNAL for other containers (kafka:19092), EXTERNAL for the host (localhost:9092).
       KAFKA_LISTENERS: INTERNAL://:19092,EXTERNAL://:9092,CONTROLLER://:9093
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:19092,EXTERNAL://localhost:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      # Un seul broker : réplication impossible au-delà de 1.
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
-      # Rétention de 7 jours : les messages restent relisibles une semaine.
       KAFKA_LOG_RETENTION_HOURS: 168
     volumes:
       - kafka-data:/var/lib/kafka/data
@@ -34,7 +29,7 @@ services:
       retries: 10
     restart: always
 
-  # Crée le topic au démarrage (sans effet s'il existe déjà), puis s'arrête.
+  # Creates the topic at startup, then exits.
   kafka-init:
     image: apache/kafka:4.3.1
     depends_on:
@@ -44,7 +39,6 @@ services:
       /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:19092 --create --if-not-exists
       --topic vlille.station_status --partitions 3 --replication-factor 1
 
-  # Commandes du projet, dans une image commune ; connexion à Kafka par le point d'entrée interne.
   producer:
     build:
       context: ..
@@ -67,7 +61,7 @@ services:
       - ../.env
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:19092
-      # Identifiants GCP de l'utilisateur (gcloud auth application-default login), en lecture seule.
+      # User's GCP Application Default Credentials, read-only.
       GOOGLE_APPLICATION_CREDENTIALS: /opt/gcloud/application_default_credentials.json
     volumes:
       - ${APPDATA}/gcloud/application_default_credentials.json:/opt/gcloud/application_default_credentials.json:ro

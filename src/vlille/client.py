@@ -1,4 +1,4 @@
-"""Client des flux GBFS V'Lille."""
+"""Client for the V'Lille GBFS feeds."""
 
 import httpx
 
@@ -6,14 +6,13 @@ from vlille.models import StationInformationFeed, StationStatusFeed
 
 
 class GbfsError(Exception):
-    """Le flux GBFS ne correspond pas à ce qui est attendu (ex. flux absent de gbfs.json)."""
+    """The GBFS feed is not as expected (e.g. a feed missing from gbfs.json)."""
 
 
 class GbfsClient:
-    """Lit les flux d'un système GBFS à partir de son point d'entrée `gbfs.json`.
+    """Reads the feeds of a GBFS system from its `gbfs.json` entry point.
 
-    Le client HTTP est fourni de l'extérieur : en production un `httpx.Client` réel (avec un
-    timeout), en test un client branché sur un faux transport, sans appel réseau.
+    The HTTP client is passed in, so tests can use a fake transport instead of the network.
     """
 
     def __init__(self, gbfs_url: str, http: httpx.Client) -> None:
@@ -21,15 +20,11 @@ class GbfsClient:
         self._http = http
 
     def feed_urls(self) -> dict[str, str]:
-        """Retourne {nom du flux: URL}, lu dans `gbfs.json`.
-
-        - Lève `httpx.HTTPStatusError` si la réponse HTTP est une erreur.
-        - Lève `GbfsError` si `gbfs.json` ne contient aucune langue.
-        """
+        """Return {feed name: URL}, read from gbfs.json."""
         languages = self._get_json(self._gbfs_url).get("data", {})
         if not languages:
             raise GbfsError(f"Aucune langue déclarée dans {self._gbfs_url}")
-        # Les flux sont les mêmes dans chaque langue : on prend la première déclarée.
+        # Every language lists the same feeds: take the first one.
         first_language = list(languages)[0]
         urls = {}
         for feed in languages[first_language]["feeds"]:
@@ -37,24 +32,13 @@ class GbfsClient:
         return urls
 
     def station_information(self) -> StationInformationFeed:
-        """Télécharge et valide le flux `station_information`.
-
-        Lève `GbfsError` si ce flux n'est pas déclaré dans `gbfs.json`.
-        """
         return StationInformationFeed.model_validate_json(self.fetch_raw("station_information"))
 
     def station_status(self) -> StationStatusFeed:
-        """Télécharge et valide le flux `station_status`.
-
-        Lève `GbfsError` si ce flux n'est pas déclaré dans `gbfs.json`.
-        """
         return StationStatusFeed.model_validate_json(self.fetch_raw("station_status"))
 
     def fetch_raw(self, name: str) -> bytes:
-        """Télécharge un flux et retourne la réponse telle que reçue, sans validation.
-
-        Lève `GbfsError` si ce flux n'est pas déclaré dans `gbfs.json`.
-        """
+        """Download a feed and return the response as received, without validation."""
         urls = self.feed_urls()
         if name not in urls:
             raise GbfsError(f"Flux '{name}' absent de {self._gbfs_url}")

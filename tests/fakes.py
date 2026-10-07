@@ -1,4 +1,4 @@
-"""Doublures de test partagées."""
+"""In-memory test doubles for GCS, BigQuery and Kafka."""
 
 
 class FakeBlob:
@@ -15,7 +15,7 @@ class FakeBlob:
 
 
 class FakeBucket:
-    """Bucket en mémoire : reproduit seulement ce que le projet utilise."""
+    """In-memory bucket, limited to what the project uses."""
 
     name = "bucket-de-test"
 
@@ -36,7 +36,7 @@ class FakeLoadJob:
 
 
 class FakeBigQuery:
-    """Client BigQuery qui enregistre les chargements demandés au lieu de les exécuter."""
+    """Records load requests instead of running them."""
 
     def __init__(self) -> None:
         self.loads: list[tuple[str, list[dict], object]] = []
@@ -47,7 +47,7 @@ class FakeBigQuery:
 
 
 class FakeProducer:
-    """Producteur Kafka qui garde les messages en mémoire."""
+    """Keeps produced messages in memory."""
 
     def __init__(self) -> None:
         self.messages: list[tuple[str, str, bytes]] = []
@@ -62,7 +62,7 @@ class FakeProducer:
 
 
 class FakeMessage:
-    """Message Kafka minimal : partition, offset et valeur."""
+    """Minimal Kafka message: partition, offset and value."""
 
     def __init__(self, partition: int, offset: int, value: bytes) -> None:
         self._partition = partition
@@ -80,7 +80,7 @@ class FakeMessage:
 
 
 class FakeConsumer:
-    """Consommateur Kafka qui note l'état du bucket au moment du commit."""
+    """Records which files exist in the bucket when offsets are committed."""
 
     def __init__(self, bucket: FakeBucket) -> None:
         self._bucket = bucket

@@ -15,7 +15,7 @@ EVENTS_FILE = "kafka/station_status/dt=2026-10-06/p0-000000000010.ndjson.gz"
 
 @pytest.fixture
 def bucket(load_fixture) -> FakeBucket:
-    """Zone brute du 2026-10-06 : un fichier du référentiel et un fichier de 2 messages Kafka."""
+    """Raw zone on 2026-10-06: one reference data file and one file of 2 Kafka messages."""
     bucket = FakeBucket()
     RawStore(bucket).write(
         "station_information", json.dumps(load_fixture("station_information")).encode()

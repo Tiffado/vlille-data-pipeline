@@ -1,6 +1,5 @@
--- Dimension des stations issue du snapshot SCD2, prête pour une jointure par période.
--- La première version d'une station est considérée valable depuis toujours : le snapshot a démarré
--- après les premières remontées, et c'est le plus ancien état connu.
+-- Station versions from the SCD2 snapshot, with a validity period for range joins.
+-- The first version is valid from 1970: the snapshot started after the first reports.
 
 select
     station_id,

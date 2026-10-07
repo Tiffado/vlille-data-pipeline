@@ -1,4 +1,4 @@
-# Liste blanche : seuls les fichiers nécessaires à l'image du projet sont envoyés à Docker.
+# Allow-list: only the files needed by the project image are sent to Docker.
 *
 !pyproject.toml
 !uv.lock

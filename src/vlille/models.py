@@ -1,8 +1,7 @@
-"""Modèles des flux GBFS utilisés par le projet.
+"""Pydantic models of the GBFS feeds used by the project.
 
-Seuls les champs exploités sont déclarés ; les champs inconnus sont ignorés, pour qu'un ajout
-côté producteur ne casse pas la collecte. Les horodatages GBFS (secondes epoch) sont convertis en
-datetime UTC.
+Only the fields we use are declared; unknown fields are ignored, so a new field on the producer
+side does not break the collection. Epoch timestamps are converted to UTC datetimes.
 """
 
 from datetime import datetime
@@ -39,7 +38,7 @@ class StationStatusData(BaseModel):
 
 
 class GbfsFeed(BaseModel):
-    """En-tête commun à tous les flux GBFS."""
+    """Header shared by all GBFS feeds."""
 
     last_updated: datetime
     ttl: int = Field(ge=0)

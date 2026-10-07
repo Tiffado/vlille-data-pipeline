@@ -14,7 +14,7 @@ BASE = "https://media.ilevia.fr/opendata/"
 
 
 def make_gbfs(feeds: dict[str, dict], gbfs: dict) -> GbfsClient:
-    """Faux serveur : gbfs.json et chaque flux à son URL, 404 pour le reste."""
+    """Fake server: gbfs.json and each feed at its URL, 404 otherwise."""
     routes = {GBFS_URL: gbfs}
     for name, body in feeds.items():
         routes[BASE + name + ".json"] = body
