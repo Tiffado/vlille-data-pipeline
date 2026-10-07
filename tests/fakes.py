@@ -59,3 +59,36 @@ class FakeProducer:
     def flush(self, timeout: float) -> int:
         self.flushed = True
         return 0
+
+
+class FakeMessage:
+    """Message Kafka minimal : partition, offset, horodatage (ms) et valeur."""
+
+    def __init__(self, partition: int, offset: int, value: bytes, timestamp_ms: int) -> None:
+        self._partition = partition
+        self._offset = offset
+        self._value = value
+        self._timestamp_ms = timestamp_ms
+
+    def partition(self) -> int:
+        return self._partition
+
+    def offset(self) -> int:
+        return self._offset
+
+    def value(self) -> bytes:
+        return self._value
+
+    def timestamp(self) -> tuple[int, int]:
+        return 1, self._timestamp_ms
+
+
+class FakeConsumer:
+    """Consommateur Kafka qui note l'état du bucket au moment du commit."""
+
+    def __init__(self, bucket: FakeBucket) -> None:
+        self._bucket = bucket
+        self.objects_at_commit: list[str] | None = None
+
+    def commit(self, asynchronous: bool) -> None:
+        self.objects_at_commit = sorted(self._bucket.objects)

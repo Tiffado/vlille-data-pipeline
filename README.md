@@ -54,6 +54,13 @@ Le producteur publie chaque minute les nouvelles remontées des stations (clé `
 docker compose -f kafka/docker-compose.yml up -d
 uv run --env-file .env vlille-produce
 ```
+Le consommateur écrit les messages par lots dans la zone brute GCS
+(`kafka/station_status/dt=AAAA-MM-JJ/`), et ne valide ses offsets qu'après l'écriture (au moins une
+fois) :
+```bash
+uv run --env-file .env vlille-consume
+```
+Ces fichiers ne sont pas chargés dans BigQuery : les modèles dbt s'appuient sur la collecte batch.
 
 Ressources GCP utilisées : voir [`infra/`](infra/README.md).
 
@@ -69,3 +76,4 @@ Chaque choix est justifié dans un ADR court ([`docs/decisions/`](docs/decisions
 - [0008 — Mart de saturation quotidienne des stations](docs/decisions/0008-mart-saturation-quotidienne.md)
 - [0009 — Orchestration avec Airflow en local](docs/decisions/0009-orchestration-airflow.md)
 - [0010 — Kafka local et producteur des remontées de stations](docs/decisions/0010-kafka-producteur.md)
+- [0011 — Consommateur Kafka vers la zone brute GCS](docs/decisions/0011-kafka-consommateur.md)

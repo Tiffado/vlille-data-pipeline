@@ -21,7 +21,7 @@ Projet personnel d'apprentissage. Une case cochée = étape réalisée et vérif
 
 ## Phase 3 — Temps réel
 - [x] 3.1 Kafka local et producteur
-- [ ] 3.2 Consommateur vers GCS
+- [x] 3.2 Consommateur vers GCS
 
 ## Finalisation
 - [ ] README avec schéma d'architecture, dépôt public

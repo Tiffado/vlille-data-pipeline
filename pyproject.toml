@@ -17,6 +17,7 @@ dependencies = [
 vlille-collect = "vlille.collect:main"
 vlille-load = "vlille.load:main"
 vlille-produce = "vlille.produce:main"
+vlille-consume = "vlille.consume:main"
 
 [dependency-groups]
 dev = [
