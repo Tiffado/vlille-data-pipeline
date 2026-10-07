@@ -22,6 +22,7 @@ Projet personnel d'apprentissage. Une case cochée = étape réalisée et vérif
 ## Phase 3 — Temps réel
 - [x] 3.1 Kafka local et producteur
 - [x] 3.2 Consommateur vers GCS
+- [x] 3.3 Kafka, seule source des disponibilités ; batch limité au référentiel, toutes les 3 heures
 
 ## Finalisation
 - [x] Documentation : README avec schéma d'architecture, guide par étape, procédure de lancement

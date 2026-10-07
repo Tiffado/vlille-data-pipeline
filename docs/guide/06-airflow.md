@@ -35,10 +35,12 @@ d'identifiants GCP (ADC) du poste est monté en lecture seule ; la configuration
 [`airflow/dags/vlille_pipeline.py`](../../airflow/dags/vlille_pipeline.py)
 
 ```
-collect  ──►  load (hier et aujourd'hui)  ──►  dbt_build
+collect (référentiel)  ──►  load (hier et aujourd'hui)  ──►  dbt_build
 ```
 
-- toutes les **30 minutes** ;
+- toutes les **3 heures** : le mart est quotidien, et dbt (modèles et tests) reste dans le quota
+  gratuit de BigQuery malgré le volume des événements Kafka ;
+- `load` charge le référentiel collecté et les messages écrits par le consommateur Kafka ;
 - chaque tâche appelle une commande du projet (`BashOperator`) : la logique reste dans le paquet testé ;
 - **2 relances** à 2 minutes d'intervalle ;
 - `catchup=False` : les créneaux manqués ne sont pas rejoués, la collecte lisant l'état actuel de l'API ;

@@ -1,7 +1,7 @@
 # 0011 — Consommateur Kafka vers la zone brute GCS
 
 - Date : 2026-10-07
-- Statut : accepté
+- Statut : accepté, modifié par l'[ADR 0013](0013-kafka-source-des-disponibilites.md)
 
 ## Contexte
 Les remontées publiées dans `vlille.station_status` doivent être conservées au-delà de la rétention

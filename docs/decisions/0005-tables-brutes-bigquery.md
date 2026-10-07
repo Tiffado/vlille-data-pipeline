@@ -1,7 +1,7 @@
 # 0005 — Tables brutes BigQuery
 
 - Date : 2026-10-06
-- Statut : accepté
+- Statut : accepté, modifié par l'[ADR 0013](0013-kafka-source-des-disponibilites.md)
 
 ## Contexte
 La zone brute GCS est purgée après 30 jours ; l'historique doit être conservé et interrogeable en SQL

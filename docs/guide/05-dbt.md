@@ -18,7 +18,7 @@ Projet : [`dbt/`](../../dbt/). Connexion ([`profiles.yml`](../../dbt/profiles.ym
 
 ```mermaid
 flowchart LR
-    RS[(raw_station_status)] --> SS[stg_station_status]
+    RS[(raw_station_status_stream)] --> SS[stg_station_status]
     RI[(raw_station_information)] --> SI[stg_station_information]
     SI --> IC[int_station_current]
     IC --> SNAP[[snap_station<br/>snapshot SCD2]]
@@ -30,25 +30,29 @@ flowchart LR
 
 | Modèle | Matérialisation | Contenu |
 |---|---|---|
-| `stg_station_status` | vue | JSON déplié : une ligne par station et par relevé, colonnes typées |
-| `stg_station_information` | vue | Idem pour le référentiel |
+| `stg_station_status` | vue | Un message Kafka par ligne, colonnes typées (doublons possibles) |
+| `stg_station_information` | vue | Référentiel déplié : une ligne par station et par relevé |
 | `int_station_current` | vue | Une ligne par station, la plus récente |
 | `snap_station` | snapshot | Historique SCD type 2 du référentiel |
 | `fct_station_status` | table incrémentale | Une ligne par remontée réelle `(station_id, last_reported_at)` |
 | `dim_station` | table | Versions des stations avec période de validité |
 | `mart_station_daily` | table | Par station et par jour : part vide, part pleine, besoin de rééquilibrage |
 
-## Staging : déplier le JSON
+## Staging : typer le JSON
+
+Chaque message Kafka contient une station : il suffit de typer ses champs.
 
 ```sql
 select
-    string(station.station_id) as station_id,
-    int64(station.num_bikes_available) as num_bikes_available,
-    timestamp_seconds(int64(station.last_reported)) as last_reported_at,
-    raw.last_updated as feed_updated_at
-from raw
-cross join unnest(json_query_array(raw.payload, '$.data.stations')) as station
+    string(payload.station_id) as station_id,
+    int64(payload.num_bikes_available) as num_bikes_available,
+    timestamp(string(payload.last_reported)) as last_reported_at,
+    ingestion_date
+from {{ source('vlille_raw', 'raw_station_status_stream') }}
 ```
+
+Le référentiel, lui, contient toutes les stations dans un tableau : on le déplie en lignes avec
+`cross join unnest(json_query_array(payload, '$.data.stations'))`.
 
 Les tables brutes exigeant un filtre de partition, chaque modèle de staging lit à partir d'une date
 fixée par la variable dbt `start_date`.
@@ -66,10 +70,10 @@ d'Airflow.
 
 ## Faits incrémentaux
 
-`fct_station_status` ne traite à chaque exécution que les relevés récents (24 dernières heures) et les
-**fusionne** (`MERGE`) sur la clé `(station_id, last_reported_at)` : pas de recalcul de tout
-l'historique, pas de doublon si un relevé est relu. Une remontée vue dans plusieurs relevés n'est
-gardée qu'une fois.
+`fct_station_status` ne traite à chaque exécution que les deux derniers jours de la table brute (filtre
+sur sa partition `ingestion_date`) et les **fusionne** (`MERGE`) sur la clé
+`(station_id, last_reported_at)` : pas de recalcul de tout l'historique, pas de doublon si un message
+est relu. Les messages Kafka en double (garantie « au moins une fois ») ne sont gardés qu'une fois.
 
 ## Le mart
 
@@ -87,7 +91,7 @@ Limite : la part des remontées approxime la part du temps, les remontées étan
 Déclarés en YAML (`not_null`, `unique`, `relationships`, `accepted_values`) ou écrits en SQL dans
 [`dbt/tests/`](../../dbt/tests/) (une requête qui doit renvoyer zéro ligne) : unicité par relevé, par
 remontée, par station et jour, parts comprises entre 0 et 1. `dbt build` construit et teste dans
-l'ordre du graphe : 33 tests.
+l'ordre du graphe : 32 tests.
 
 ## Lancer et voir
 

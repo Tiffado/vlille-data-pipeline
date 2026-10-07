@@ -1,6 +1,8 @@
-"""DAG vlille_pipeline : collecte V'Lille, chargement dans BigQuery, puis modèles dbt.
+"""DAG vlille_pipeline : référentiel des stations, chargement dans BigQuery, puis modèles dbt.
 
-Toutes les 30 minutes. Les commandes du projet sont installées dans l'image Airflow, dans un
+Toutes les 3 heures. Les disponibilités arrivent en continu par Kafka (conteneurs producer et
+consumer) dans la zone brute ; ce DAG collecte le référentiel, charge les deux sources dans BigQuery
+et reconstruit les modèles. Les commandes du projet sont installées dans l'image Airflow, dans un
 environnement Python séparé (/opt/vlille/.venv).
 """
 
@@ -14,8 +16,10 @@ DBT_DIR = "/opt/vlille/dbt"
 
 with DAG(
     dag_id="vlille_pipeline",
-    description="Collecte V'Lille → zone brute GCS → BigQuery → dbt build",
-    schedule=timedelta(minutes=30),
+    description="Référentiel V'Lille + événements Kafka → BigQuery → dbt build",
+    # Toutes les 3 heures : le mart est quotidien, et dbt (modèles et tests) reste ainsi dans le
+    # quota gratuit de BigQuery malgré le volume des événements Kafka.
+    schedule=timedelta(hours=3),
     start_date=datetime(2026, 10, 7),
     # La collecte lit l'état actuel de l'API : rejouer des créneaux passés n'a pas de sens.
     catchup=False,
@@ -23,6 +27,7 @@ with DAG(
     default_args={"retries": 2, "retry_delay": timedelta(minutes=2)},
     tags=["vlille"],
 ) as dag:
+    # Référentiel des stations uniquement ; les disponibilités viennent de Kafka.
     collect = BashOperator(
         task_id="collect",
         bash_command=f"{VENV_BIN}/vlille-collect",

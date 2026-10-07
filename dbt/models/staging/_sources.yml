@@ -2,9 +2,9 @@ version: 2
 
 sources:
   - name: vlille_raw
-    description: Tables brutes chargées par vlille-load (une ligne par fichier de la zone brute GCS).
+    description: Tables brutes chargées par vlille-load depuis la zone brute GCS.
     tables:
       - name: raw_station_information
-        description: Réponses du flux GBFS station_information.
-      - name: raw_station_status
-        description: Réponses du flux GBFS station_status.
+        description: Référentiel des stations, collecté par le batch (un fichier par ligne).
+      - name: raw_station_status_stream
+        description: Disponibilités des stations, publiées dans Kafka (un message par ligne).

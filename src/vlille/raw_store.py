@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 
 from google.cloud.storage import Bucket
 
-PREFIX = "gbfs"
+from vlille.paths import GBFS_PREFIX
 
 
 class RawStoreError(Exception):
@@ -26,7 +26,7 @@ def object_name(feed: str, last_updated: datetime) -> str:
     utc = last_updated.astimezone(UTC)
     day = utc.strftime("%Y-%m-%d")
     timestamp = utc.strftime("%Y%m%dT%H%M%SZ")
-    return f"{PREFIX}/{feed}/dt={day}/{feed}_{timestamp}.json.gz"
+    return f"{GBFS_PREFIX}/{feed}/dt={day}/{feed}_{timestamp}.json.gz"
 
 
 def read_last_updated(payload: bytes) -> datetime:

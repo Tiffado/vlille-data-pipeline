@@ -16,11 +16,11 @@ from datetime import UTC, date, datetime
 from confluent_kafka import Consumer, Message
 from google.cloud import storage
 
+from vlille.paths import KAFKA_PREFIX
 from vlille.produce import TOPIC
 from vlille.settings import env
 
 GROUP_ID = "vlille-gcs-writer"
-PREFIX = "kafka/station_status"
 
 log = logging.getLogger("vlille.consume")
 
@@ -28,7 +28,7 @@ log = logging.getLogger("vlille.consume")
 def object_name(partition: int, first_offset: int, day: date) -> str:
     """Ex. kafka/station_status/dt=2026-10-07/p1-000000000146.ndjson.gz"""
     # Offset complété par des zéros : les fichiers d'une partition se trient dans l'ordre.
-    return f"{PREFIX}/dt={day.isoformat()}/p{partition}-{first_offset:012d}.ndjson.gz"
+    return f"{KAFKA_PREFIX}/dt={day.isoformat()}/p{partition}-{first_offset:012d}.ndjson.gz"
 
 
 def write_batch(bucket: storage.Bucket, messages: list[Message], day: date) -> list[str]:
